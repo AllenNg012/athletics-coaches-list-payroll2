@@ -9,6 +9,7 @@ function UpdateUser() {
   const [location, setLocation] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [gender, setGender] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,6 +20,7 @@ function UpdateUser() {
         setLocation(result.data.location);
         setEmail(result.data.email);
         setPhone(result.data.phone);
+        setGender(result.data.gender); // Set the gender value
       })
       .catch((err) => console.log(err));
   }, [id]);
@@ -31,6 +33,7 @@ function UpdateUser() {
         location,
         email,
         phone,
+        gender, // Include gender in the update request
       })
       .then((result) => {
         console.log(result);
@@ -63,6 +66,14 @@ function UpdateUser() {
           <div className="mb-2">
             <label htmlFor="">Phone</label>
             <input type="number" placeholder="Enter Phone" className="form-control" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+          </div>
+          <div className="mb-2">
+            <label htmlFor="">Gender</label>
+            <select className="form-control" value={gender} onChange={(e) => setGender(e.target.value)} required>
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
           </div>
           <button className="btn btn-success">Update</button>
           <Link to="/" className="btn btn-secondary mx-2">Back</Link>

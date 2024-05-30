@@ -29,6 +29,11 @@ const UserSchema = new mongoose.Schema({
       type:Number,
       required:true
   },
+  gender: {
+    type: String,
+    required: true // Ensures the email field is required
+  }
+  
 });
 
 const UserModel = mongoose.model("users", UserSchema);

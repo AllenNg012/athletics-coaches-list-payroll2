@@ -34,6 +34,7 @@ app.put('/updateUser/:id', (req,res) =>{
         hour: req.body.hour,
         hourlyWage: req.body.hourlyWage,
         totalSalary: req.body.totalSalary,
+        gender: req.body.gender
     })
     .then(users => res.json(users))
     .catch(err => res.json(err))

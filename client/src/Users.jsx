@@ -1,10 +1,9 @@
-/* eslint-disable no-unused-vars */
-import axios from "axios";
+// eslint-disable-next-line no-unused-vars
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 
-// Styled Components
 const Container = styled.div`
   display: flex;
   flex-direction: column;
@@ -30,6 +29,7 @@ const StyledTable = styled.table`
 const StyledTh = styled.th`
   width: ${({ width }) => width};
   overflow: hidden;
+  cursor: pointer;
 `;
 
 const StyledTd = styled.td`
@@ -40,69 +40,143 @@ const StyledTd = styled.td`
 const AddButton = styled(Link)`
   margin-left: 1vw;
 `;
+
 const TopDiv = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-left: 1vw; /* Add margin-left here */
+  margin-left: 1vw;
+`;
+
+const EditButton = styled(Link)`
+  margin-right: 8px;
+`;
+
+const SearchBar = styled.input`
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  margin-bottom: 1rem;
+`;
+
+const GenderFilter = styled.select`
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
 `;
 
 function Users() {
   const [users, setUsers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortKey, setSortKey] = useState(null);
+  const [sortOrder, setSortOrder] = useState(1);
+  const [filterGender, setFilterGender] = useState('');
 
   useEffect(() => {
     axios.get('http://localhost:3001')
-      .then(result => setUsers(result.data))
+      .then(result => setUsers(result.data || []))
       .catch(err => console.log(err));
   }, []);
 
   const handleDelete = (id) => {
-    // Show confirmation dialog
     const isConfirmed = window.confirm("Are you sure you want to delete this user?");
     
-    // Check if the user confirmed the deletion
     if (isConfirmed) {
-      // Proceed with deletion
       axios.delete('http://localhost:3001/deleteUser/' + id)
         .then(result => {
           console.log(result);
-          setUsers(users.filter(user => user._id !== id)); // Update state instead of reloading the page
+          setUsers(users.filter(user => user._id !== id));
         })
         .catch(err => console.log(err));
     }
   };
 
-  const EditButton = styled(Link)`
-  margin-right: 8px; /* Add margin-right here */
-`;
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleGenderFilterChange = (e) => {
+    setFilterGender(e.target.value);
+  };
+
+  const handleSort = (key) => {
+    if (sortKey === key) {
+      setSortOrder(-sortOrder);
+    } else {
+      setSortKey(key);
+      setSortOrder(1);
+    }
+  };
+
+  let filteredUsers = users.slice(); // Start with all users
+
+  // Filter by search term
+  filteredUsers = filteredUsers.filter(user =>
+    (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (user.location && user.location.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (typeof user.phone === 'string' && user.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (user.gender && user.gender.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
+  // Filter by selected gender
+  if (filterGender) {
+    filteredUsers = filteredUsers.filter(user => user.gender === filterGender);
+  }
+
+  // Sort filtered users
+  filteredUsers.sort((a, b) => {
+    if (sortKey) {
+      if (typeof a[sortKey] === 'string') {
+        return a[sortKey].localeCompare(b[sortKey]) * sortOrder;
+      } else {
+        return (a[sortKey] - b[sortKey]) * sortOrder;
+      }
+    }
+    return 0;
+  });
 
   return (
     <Container>
       <TableContainer>
-      <TopDiv>
+        <TopDiv>
           <h1>Coach List</h1>
           <div>
             <AddButton to="/create" className="btn btn-success">Add Coach</AddButton>
             <AddButton to="/payroll" className="btn" style={{ background: "#00000063" }}>Payroll</AddButton>
           </div>
         </TopDiv>
+        <SearchBar 
+          type="text" 
+          placeholder="Search by name, location, email, phone, or gender" 
+          value={searchTerm} 
+          onChange={handleSearch} 
+        />
+        <GenderFilter value={filterGender} onChange={handleGenderFilterChange}>
+          <option value="">Filter by Gender</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </GenderFilter>
         <StyledTable className="table">
           <thead>
             <tr>
-              <StyledTh width="20%">Name</StyledTh>
-              <StyledTh width="30%">location</StyledTh>
-              <StyledTh width="20%">Email</StyledTh>
-              <StyledTh width="16%">Phone</StyledTh>
-              <StyledTh width="14%">Action</StyledTh>
+              <StyledTh width="20%" onClick={() => handleSort("name")}>Name {sortKey === "name" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
+              <StyledTh width="20%" onClick={() => handleSort("location")}>Location {sortKey === "location" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
+              <StyledTh width="15%" onClick={() => handleSort("email")}>Email {sortKey === "email" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
+              <StyledTh width="10%" onClick={() => handleSort("phone")}>Phone {sortKey === "phone" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
+              <StyledTh width="10%" onClick={() => handleSort("gender")}>Gender {sortKey === "gender" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
+              <StyledTh width="15%">Action</StyledTh>
             </tr>
           </thead>
           <tbody>
-            {users.map((user, index) => (
+            {filteredUsers && filteredUsers.map((user, index) => (
               <tr key={index}>
                 <StyledTd width="20%">{user.name}</StyledTd>
-                <StyledTd width="15%">{user.location}</StyledTd>
+                <StyledTd width="20%">{user.location}</StyledTd>
                 <StyledTd width="15%">{user.email}</StyledTd>
-                <StyledTd width="15%">{user.phone}</StyledTd>
+                <StyledTd width="10%">{user.phone}</StyledTd>
+                <StyledTd width="10%">{user.gender}</StyledTd>
                 <StyledTd width="15%">
                   <EditButton to={`/update/${user._id}`} className="btn btn-success">Edit</EditButton>
                   <button className="btn btn-danger" onClick={() => handleDelete(user._id)}>Delete</button>
