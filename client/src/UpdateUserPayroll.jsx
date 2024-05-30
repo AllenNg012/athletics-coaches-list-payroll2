@@ -77,7 +77,7 @@ function UpdateUserPayroll() {
               value={totalSalary} onChange={(e) => setTotalSalary(e.target.value)} />
           </div>
           <button className="btn btn-success">Update</button>
-          <Link to="/" className="btn btn-secondary mx-2">Back</Link>
+          <Link to="/payroll" className="btn btn-secondary mx-2">Back</Link>
         </form>
       </div>
     </div>
