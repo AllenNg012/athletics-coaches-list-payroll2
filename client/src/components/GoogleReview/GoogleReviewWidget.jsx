@@ -1,4 +1,4 @@
-// GoogleReviewWidget.jsx
+/* eslint-disable no-unused-vars */
 import React, { useEffect } from 'react';
 
 const GoogleReviewWidget = () => {

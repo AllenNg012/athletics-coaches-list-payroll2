@@ -1,4 +1,4 @@
-// Header.jsx
+/* eslint-disable no-unused-vars */
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
@@ -33,14 +33,13 @@ const Container = styled.div`
     position: fixed;
     top: 0;
     left: 0;
-    width: 98%;
+    width: 100%;
     z-index: 1000;
     background-color: #1B590B;
     padding: 1.5rem 1rem;
     display: flex;
     animation: header 500ms ease-in-out;
-
-    @media(max-width: 640px){
+        @media(max-width: 640px){
         padding: 1rem;
     }
 `;

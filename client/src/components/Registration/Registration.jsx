@@ -113,7 +113,8 @@ margin-top: 0.5rem;
 
 const Container = styled.div`
   background-color: #f5f5ef;
-  max-height:90%; 
+  max-height:100%;
+  height : 500px ;
   display: flex;
   flex-direction: column;
   align-items: flex-start; 
