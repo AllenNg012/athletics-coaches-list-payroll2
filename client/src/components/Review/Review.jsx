@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { Slide } from "react-awesome-reveal";
 import GoogleReviewWidget from "../GoogleReview/GoogleReviewWidget";
 import review from "./review.png";
+import logo from "./googlelogo.png"
 
 const ProfComponent = () => {
   return (
@@ -26,6 +27,8 @@ const ProfComponent = () => {
               </Texts>
               <Profile>
                 <GoogleReviewWidget />
+                <BottomText>Junior Athletics on Google Reviews  <img src={logo} alt="logo" className="logo" /></BottomText>
+
               </Profile>
             </ProfileContainer>
           </Slide>
@@ -36,6 +39,15 @@ const ProfComponent = () => {
 };
 
 export default ProfComponent;
+
+const BottomText = styled.p`
+  position: absolute;
+  bottom: 1.5cm;
+  right: 0;
+  color: #080808;
+  font-size: 1.5rem;
+  .logo{height:3vw;}
+`;
 
 const BGC = styled.div`
   background-color: #f5f5ef;
@@ -117,7 +129,7 @@ const ProfileContainer = styled.div`
   flex-direction: column;
   align-items: center;
 justify-content: center;
-height: 90%;
+height: 85%;
 `;
 
 const Profile = styled.div`
