@@ -38,8 +38,9 @@ function App() {
         <Route path='/programs' element={<Programs />} />
         <Route path='/create-program' element={<CreateProgram />} />
          <Route path='/update-program/:id' element={<UpdateProgram />} ></Route>
-         <Route path="/success" component={<Success />} />
-        <Route path="/cancel" component={<Cancel />} />
+         <Route path='/success' element={<Success />} ></Route>
+         <Route path='/cancel' element={<Cancel />} ></Route>
+
       </Routes>
     </Router>
   );

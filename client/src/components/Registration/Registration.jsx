@@ -2,6 +2,11 @@
 import React from "react";
 import styled from "styled-components";
 import { useLocation } from "react-router-dom";
+import axios from "axios";
+
+import { loadStripe } from "@stripe/stripe-js";
+
+const stripePromise = loadStripe("pk_test_51PNSST2KpyYZmvZEQWr6oqPxWFqTeH6KbyUOQEYblEKHM3U7XhTCYl4GU6YJ2lYJgmIHB2n0od0V28dGPfw0sXSP00BKh7CEYT");
 
 
 const RegistrationForm = () => {
@@ -11,6 +16,26 @@ const RegistrationForm = () => {
   const programAge = queryParams.get("programAge");
   const programPlace = queryParams.get("programPlace");
   const programLocation = queryParams.get("programLocation");
+  const programFees = queryParams.get("programFees");
+  const programID = queryParams.get("programID");
+
+
+  const handleBuy = async (programId) => {
+    const stripe = await stripePromise;
+
+    const response = await axios.post('http://localhost:3001/create-checkout-session', { programId });
+
+    const sessionId = response.data.id;
+
+    const { error } = await stripe.redirectToCheckout({
+      sessionId,
+    });
+
+    if (error) {
+      console.error("Stripe checkout error:", error);
+    }
+  };
+
   return (
     <>
       <Header>
@@ -101,7 +126,8 @@ const RegistrationForm = () => {
             </Step></Step2>
           </Column>
         </FormSection>
-        <NextButton type="submit">Next</NextButton>
+       {/* <NextButton type="submit">Next</NextButton>*/}
+        <NextButton onClick={() => handleBuy(programID)} >Next</NextButton>
       </Container>
     </>
   );

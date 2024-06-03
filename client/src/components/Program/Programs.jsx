@@ -187,7 +187,8 @@ function Programs() {
               <StyledTh width="10%" onClick={() => handleSort("fees")}>Program Fees {sortKey === "fees" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
               <StyledTh width="15%">Register</StyledTh>
               <StyledTh width="15%">Info</StyledTh>
-              <StyledTh width="15%">Buy</StyledTh>
+
+             {/*  <StyledTh width="15%">Buy</StyledTh>*/}
             </tr>
           </thead>
           <tbody>
@@ -198,14 +199,16 @@ function Programs() {
                 <StyledTd width="25%">{`${program.place} (${program.location})`}</StyledTd>
                 <StyledTd width="10%">${program.fees} per week</StyledTd>
                 <StyledTd width="15%">
-                  <Link to={`/Registration?programName=${program.name}&programAge=${program.age}&programPlace=${program.place}&programLocation=${program.location}&programFees=${program.fees}`} className="btn btn-success">Register</Link>
+                  <Link to={`/Registration?programName=${program.name}&programAge=${program.age}&programPlace=${program.place}&programLocation=${program.location}&programFees=${program.fees}&programID=${program._id}`} className="btn btn-success">Register</Link>
                 </StyledTd>
                 <StyledTd width="15%">
                   <Link to={`/`}>Click for more information</Link>
                 </StyledTd>
+                             {/* 
+
                 <StyledTd width="15%">
                   <button onClick={() => handleBuy(program._id)} className="btn btn-primary">Buy</button>
-                </StyledTd>
+                </StyledTd>*/}
               </tr>
             ))}
           </tbody>
