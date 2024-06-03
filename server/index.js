@@ -1,16 +1,132 @@
-// server.js
 
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const UserModel = require('./models/Users');
 const ProgramModel = require('./models/Program');
+const stripe = require('stripe')('sk_test_51PNSST2KpyYZmvZELH7NIKMo4zOPqLuCKRWE1pfg87d3q5lHOyoW94v4lHEMuxCytU4A8PyEZtSP8y79udCAB5xS00iYwURNL3');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 mongoose.connect("mongodb+srv://nch0123ca:6vRwCS5T9ZpLR2ab@coachnpayroll.1zfwp8k.mongodb.net/users");
+
+
+app.post('/create-checkout-session', async (req, res) => {
+  const { programId, discountCode } = req.body;
+
+  try {
+    const program = await ProgramModel.findById(programId);
+
+    if (!program) {
+      return res.status(404).json({ error: 'Program not found' });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: program.name,
+            description: `${program.sport} at ${program.place}`,
+          },
+          unit_amount: program.fees * 100,
+        },
+        quantity: 1,
+      }],
+      allow_promotion_codes: true, // Enable usage of promotion codes
+      promotion_code: discountCode, // Pass the discount code
+      mode: 'payment',
+      success_url: 'http://localhost:3000/success',
+      cancel_url: 'http://localhost:3000/cancel',
+    });
+
+    res.json({ id: session.id });
+  } catch (error) {
+    console.error('Error creating checkout session:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Stripe payment endpoint
+app.post('/create-checkout-session', async (req, res) => {
+    const { programId, discountCode } = req.body;
+    
+    const program = await ProgramModel.findById(programId);
+    
+    if (!program) {
+        return res.status(404).json({ error: 'Program not found' });
+    }
+
+    const sessionParams = {
+        payment_method_types: ['card'],
+        line_items: [{
+            price_data: {
+                currency: 'usd',
+                product_data: {
+                    name: program.name,
+                    description: `${program.sport} at ${program.place} (${program.location})`,
+                },
+                unit_amount: program.fees * 100,
+            },
+            quantity: 1,
+        }],
+        mode: 'payment',
+        success_url: 'http://localhost:3000/success',
+        cancel_url: 'http://localhost:3000/cancel',
+    };
+
+    // Apply discount if a discount code is provided
+    if (discountCode) {
+        try {
+            const promotionCode = await stripe.promotionCodes.retrieve(discountCode);
+            if (promotionCode) {
+                sessionParams.discounts = [{ promotion_code: promotionCode.id }];
+            }
+        } catch (error) {
+            return res.status(400).json({ error: 'Invalid discount code' });
+        }
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
+
+    res.json({ id: session.id });
+});
+
+// Stripe payment endpoint
+app.post('/create-checkout-session', async (req, res) => {
+    const { programId } = req.body;
+    
+    // Fetch program details from the database
+    const program = await ProgramModel.findById(programId);
+    
+    if (!program) {
+        return res.status(404).json({ error: 'Program not found' });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [{
+            price_data: {
+                currency: 'usd',
+                product_data: {
+                    name: program.name,
+                    description: `${program.sport} at ${program.place} (${program.location})`,
+                },
+                unit_amount: program.fees * 100, // Stripe expects the amount in cents
+            },
+            quantity: 1,
+        }],
+        mode: 'payment',
+        success_url: 'http://localhost:3000/success', // Update with your success URL
+        cancel_url: 'http://localhost:3000/cancel', // Update with your cancel URL
+    });
+
+    res.json({ id: session.id });
+});
+
 
 // User routes
 app.get('/', (req, res) => {

@@ -1,8 +1,13 @@
-// eslint-disable-next-line no-unused-vars
+/* eslint-disable no-unused-vars */
+// Programs.js
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
+import { loadStripe } from "@stripe/stripe-js";
+
+const stripePromise = loadStripe("pk_test_51PNSST2KpyYZmvZEQWr6oqPxWFqTeH6KbyUOQEYblEKHM3U7XhTCYl4GU6YJ2lYJgmIHB2n0od0V28dGPfw0sXSP00BKh7CEYT");
 
 const Container = styled.div`
   display: flex;
@@ -12,7 +17,6 @@ const Container = styled.div`
   min-height: 100vh;
   padding-bottom: 5vh;
   padding-top: 10vh;
-
 `;
 
 const TableContainer = styled.div`
@@ -26,7 +30,7 @@ const TableContainer = styled.div`
 const StyledTable = styled.table`
   width: 100%;
   table-layout: fixed;
-  tr{ text-align: center;}
+  tr { text-align: center; }
 `;
 
 const StyledTh = styled.th`
@@ -39,8 +43,6 @@ const StyledTd = styled.td`
   width: ${({ width }) => width};
   overflow: hidden;
 `;
-
-
 
 const TopDiv = styled.div`
   display: flex;
@@ -69,8 +71,6 @@ function Programs() {
   const [programs, setPrograms] = useState([]);
   const [sortKey, setSortKey] = useState(null);
   const [sortOrder, setSortOrder] = useState(1);
-
-  // Filter state variables
   const [ageFilter, setAgeFilter] = useState('');
   const [sportFilter, setSportFilter] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
@@ -82,8 +82,6 @@ function Programs() {
       .catch(err => console.log(err));
   }, []);
 
- 
-
   const handleSort = (key) => {
     if (sortKey === key) {
       setSortOrder(-sortOrder);
@@ -93,11 +91,6 @@ function Programs() {
     }
   };
 
-  let filteredPrograms = programs.slice(); // Start with all programs
-
-
-
-
   const handleResetFilters = () => {
     setAgeFilter('');
     setSportFilter('');
@@ -105,7 +98,8 @@ function Programs() {
     setGenderFilter('');
   };
 
-  // Apply additional filters
+  let filteredPrograms = programs.slice();
+
   if (ageFilter) {
     filteredPrograms = filteredPrograms.filter(program => program.age === ageFilter);
   }
@@ -119,7 +113,6 @@ function Programs() {
     filteredPrograms = filteredPrograms.filter(program => program.gender === genderFilter);
   }
 
-  // Sort filtered programs
   filteredPrograms.sort((a, b) => {
     if (sortKey) {
       if (typeof a[sortKey] === 'string') {
@@ -131,15 +124,29 @@ function Programs() {
     return 0;
   });
 
+  const handleBuy = async (programId) => {
+    const stripe = await stripePromise;
+
+    const response = await axios.post('http://localhost:3001/create-checkout-session', { programId });
+
+    const sessionId = response.data.id;
+
+    const { error } = await stripe.redirectToCheckout({
+      sessionId,
+    });
+
+    if (error) {
+      console.error("Stripe checkout error:", error);
+    }
+  };
+
   return (
-     <Container id="Location">
+    <Container id="Location">
       <TableContainer>
         <TopDiv>
           <h1>Find the right program for your child!</h1>
-
         </TopDiv>
         <FilterContainer>
-
           <FilterSelect value={ageFilter} onChange={(e) => setAgeFilter(e.target.value)}>
             <option value="">All Ages</option>
             <option value="3-4">3-4</option>
@@ -180,7 +187,7 @@ function Programs() {
               <StyledTh width="10%" onClick={() => handleSort("fees")}>Program Fees {sortKey === "fees" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
               <StyledTh width="15%">Register</StyledTh>
               <StyledTh width="15%">Info</StyledTh>
-
+              <StyledTh width="15%">Buy</StyledTh>
             </tr>
           </thead>
           <tbody>
@@ -191,10 +198,13 @@ function Programs() {
                 <StyledTd width="25%">{`${program.place} (${program.location})`}</StyledTd>
                 <StyledTd width="10%">${program.fees} per week</StyledTd>
                 <StyledTd width="15%">
-                <Link to={`/Registration?programName=${program.name}&programAge=${program.age}&programPlace=${program.place}&programLocation=${program.location}`} className="btn btn-success">Register</Link>
+                  <Link to={`/Registration?programName=${program.name}&programAge=${program.age}&programPlace=${program.place}&programLocation=${program.location}&programFees=${program.fees}`} className="btn btn-success">Register</Link>
                 </StyledTd>
                 <StyledTd width="15%">
-                <Link to={`/`}>Click for more information</Link>
+                  <Link to={`/`}>Click for more information</Link>
+                </StyledTd>
+                <StyledTd width="15%">
+                  <button onClick={() => handleBuy(program._id)} className="btn btn-primary">Buy</button>
                 </StyledTd>
               </tr>
             ))}

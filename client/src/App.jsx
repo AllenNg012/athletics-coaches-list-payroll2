@@ -16,6 +16,10 @@ import Programs from './Programs';
 import CreateProgram from './CreateProgram';
 // Import UpdateProgram if it's needed later
 import UpdateProgram from './UpdateProgram';
+
+import Success from './components/Success';
+import Cancel from './components/Cancel';
+
 function App() {
   return (
     <Router>
@@ -34,6 +38,8 @@ function App() {
         <Route path='/programs' element={<Programs />} />
         <Route path='/create-program' element={<CreateProgram />} />
          <Route path='/update-program/:id' element={<UpdateProgram />} ></Route>
+         <Route path="/success" component={<Success />} />
+        <Route path="/cancel" component={<Cancel />} />
       </Routes>
     </Router>
   );
