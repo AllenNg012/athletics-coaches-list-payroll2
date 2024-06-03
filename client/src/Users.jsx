@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
+import Header from "./Header";
 
 const Container = styled.div`
   display: flex;
@@ -18,7 +19,7 @@ const TableContainer = styled.div`
   background: white;
   border-radius: 8px;
   padding: 16px;
-  margin-top: 6vw;
+  margin-top: 3vw;
 `;
 
 const StyledTable = styled.table`
@@ -110,13 +111,9 @@ function Users() {
 
   let filteredUsers = users.slice(); // Start with all users
 
-  // Filter by search term
+  // Filter by search term (name only)
   filteredUsers = filteredUsers.filter(user =>
-    (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (user.location && user.location.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (typeof user.phone === 'string' && user.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (user.gender && user.gender.toLowerCase().includes(searchTerm.toLowerCase()))
+    user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Filter by selected gender
@@ -138,6 +135,7 @@ function Users() {
 
   return (
     <Container>
+      <Header />
       <TableContainer>
         <TopDiv>
           <h1>Coach List</h1>
@@ -148,7 +146,7 @@ function Users() {
         </TopDiv>
         <SearchBar 
           type="text" 
-          placeholder="Search by name, location, email, phone, or gender" 
+          placeholder="Search by name" 
           value={searchTerm} 
           onChange={handleSearch} 
         />

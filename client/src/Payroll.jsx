@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import * as XLSX from 'xlsx';
+import Header from "./Header";
 
 // Styled Components (unchanged)
 const Container = styled.div`
@@ -20,7 +21,7 @@ const TableContainer = styled.div`
   background: white;
   border-radius: 8px;
   padding: 16px;
-  margin-top: 6vw;
+  margin-top: 3vw;
 `;
 
 const StyledTable = styled.table`
@@ -111,12 +112,13 @@ const Payroll = () => {
 
   return (
     <Container>
+      <Header/>
       <TableContainer>
         <TopDiv>
           <h1>Payroll</h1>
           <div>
             <button onClick={handleExport} className="btn btn-primary">Export to Excel</button>
-            <AddButton to="/" className="btn" style={{ background: "#00000063" }}>Coach</AddButton>
+            <AddButton to="/coach" className="btn" style={{ background: "#00000063" }}>Coach</AddButton>
           </div>
         </TopDiv>
         {/* Add search input */}
