@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+import React from "react";
 import styled from "styled-components";
 import { Slide } from "react-awesome-reveal";
 import GoogleReviewWidget from "../GoogleReview/GoogleReviewWidget";
