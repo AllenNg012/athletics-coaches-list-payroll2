@@ -14,6 +14,9 @@ const Header = () => {
         <Container bar={bar}>
             <Nav bar={bar} onClick={handleBackgroundClick}>
                 <span><a href="/">Admin</a></span>
+                <span><a href="/programs">Programs</a></span>
+                <span><a href="/Coach">Coach</a></span>
+                <span><a href="/Payroll">Payroll</a></span>
                 <span><a href="/">Sign out</a></span>
             </Nav>
             <Bars onClick={() => setBar(!bar)} bar={bar}>

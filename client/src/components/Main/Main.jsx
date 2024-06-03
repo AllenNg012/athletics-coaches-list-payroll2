@@ -4,20 +4,20 @@ import styled from "styled-components";
 import { Slide } from "react-awesome-reveal";
 
 
-const Faq = () => {
+const Main = () => {
   return (
     <BGC>
       <TopContainer>
-      <h1>Frequently Asked Questions</h1>
+      <h1>Main page</h1>
       </TopContainer>
-    <Container id="FAQ">
+    <Container id="home">
       
     </Container>
     </BGC>
   );
 };
 
-export default Faq;
+export default Main;
 
 const TopContainer = styled.div`
 width:85%;
@@ -25,7 +25,7 @@ margin: auto;
 `
 
 const BGC = styled.div`
-    background-color: #C7D8A7;
+    background-color: #f5f5ef;
     padding-top: 1rem;
   padding-bottom: 10rem;
   @media (max-width: 640px) {

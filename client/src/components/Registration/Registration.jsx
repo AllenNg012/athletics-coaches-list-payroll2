@@ -1,14 +1,22 @@
 /* eslint-disable no-unused-vars */
 import React from "react";
 import styled from "styled-components";
+import { useLocation } from "react-router-dom";
+
 
 const RegistrationForm = () => {
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const programName = queryParams.get("programName");
+  const programAge = queryParams.get("programAge");
+  const programPlace = queryParams.get("programPlace");
+  const programLocation = queryParams.get("programLocation");
   return (
     <>
       <Header>
         <Title>REGISTRATION FORM</Title>
         <Description>
-          <span>You have selected:</span> Soccer Summer Camp All-Girls Outdoor Training (5-6 yrs) at Applewood Heights Secondary School (Mississauga)
+          <span>You have selected:</span> {programName} ({programAge} yrs) at {programPlace} ({programLocation})
         </Description>
         <BackButton href="/">Back</BackButton>
       </Header>

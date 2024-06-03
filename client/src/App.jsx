@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-import { useState } from 'react'
 import './App.css'
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -14,11 +12,17 @@ import Header from "./components/Header/Header";
 import Login from "./components/Login/Login";
 import Registration from "./components/Registration/Registration";
 
+import Programs from './Programs';
+import CreateProgram from './CreateProgram';
+// Import UpdateProgram if it's needed later
+import UpdateProgram from './UpdateProgram';
 function App() {
   return (
     <Router>
+      {/* Conditionally render Header */}
       <ConditionalHeader />
       <Routes>
+        {/* Define routes */}
         <Route path="/" element={<Home />} />
         <Route path="/Login" element={<Login />} />
         <Route path="/Registration" element={<Registration />} />
@@ -27,11 +31,15 @@ function App() {
         <Route path='/create' element={<CreateUser />}></Route>
         <Route path='/update/:id' element={<UpdateUser />}></Route>
         <Route path='/updatePayroll/:id' element={<UpdateUserPayroll />}></Route>
+        <Route path='/programs' element={<Programs />} />
+        <Route path='/create-program' element={<CreateProgram />} />
+         <Route path='/update-program/:id' element={<UpdateProgram />} ></Route>
       </Routes>
     </Router>
   );
 }
 
+// Conditionally render Header based on location
 function ConditionalHeader() {
   const location = useLocation();
   const showHeader = location.pathname === "/" || location.pathname === "/Registration"; // Check if pathname is "/" or "/Registration"
@@ -40,7 +48,3 @@ function ConditionalHeader() {
 }
 
 export default App;
-
-
-
-

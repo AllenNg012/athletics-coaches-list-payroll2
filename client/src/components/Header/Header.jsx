@@ -12,12 +12,11 @@ const Header = () => {
     return (
         <Container bar={bar}>
             <Nav bar={bar} onClick={handleBackgroundClick}>
-                <span><a href="#home">Programs</a></span>
-                <span><a href="#service">About Us</a></span>
-                <span><a href="#project">Locations</a></span>
-                <span><a href="#service">FAQ</a></span>
+                <span><a href="#Program">Programs</a></span>
+                <span><a href="#About">About Us</a></span>
+                <span><a href="#Location">Locations</a></span>
+                <span><a href="#FAQ">FAQ</a></span>
                 <span><a href="#footer">Contact Me</a></span>
-                <span><a href="/Registration">Registration</a></span>
                 <span><a href="/Login">Login</a></span>
             </Nav>
             <Bars onClick={() => setBar(!bar)} bar={bar}>

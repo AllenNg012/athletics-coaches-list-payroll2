@@ -8,7 +8,7 @@ import aboutuslogo from "./aboutuslogo.png";
 
 const ProfComponent = () => {
   return (
-    <BGC><Container id="home">
+    <BGC><Container id="About">
       <Content>
         <Slide direction="left">
         <Profile>

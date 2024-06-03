@@ -4,20 +4,20 @@ import styled from "styled-components";
 import { Slide } from "react-awesome-reveal";
 
 
-const Faq = () => {
+const Program = () => {
   return (
     <BGC>
       <TopContainer>
-      <h1>Frequently Asked Questions</h1>
+      <h1>Our Program</h1>
       </TopContainer>
-    <Container id="FAQ">
+    <Container id="Program">
       
     </Container>
     </BGC>
   );
 };
 
-export default Faq;
+export default Program;
 
 const TopContainer = styled.div`
 width:85%;
