@@ -19,8 +19,12 @@ const RegistrationForm = () => {
   const programDate = queryParams.get("programDate");
 
   const [programs, setPrograms] = useState([]);
-  const [filteredPrograms, setFilteredPrograms] = useState([]);
   const [childDOBs, setChildDOBs] = useState(["", "", "", "", ""]);
+  const [filteredPrograms, setFilteredPrograms] = useState([[], [], [], [], []]);
+  const [selectedDays, setSelectedDays] = useState(["", "", "", "", ""]);
+  const [filteredClasses, setFilteredClasses] = useState([[], [], [], [], []]);
+  const [addMoreChildren, setAddMoreChildren] = useState(null);
+  const [numberOfChildren, setNumberOfChildren] = useState(0);
 
   useEffect(() => {
     axios.get('http://localhost:3001/programs')
@@ -48,7 +52,23 @@ const RegistrationForm = () => {
     setChildDOBs(newDOBs);
 
     const age = calculateAge(event.target.value);
-    setFilteredPrograms(filterProgramsByAge(age));
+    const ageFilteredPrograms = filterProgramsByAge(age);
+    const newFilteredPrograms = [...filteredPrograms];
+    newFilteredPrograms[index] = ageFilteredPrograms;
+    setFilteredPrograms(newFilteredPrograms);
+  };
+
+  const handleDayChange = (index, event) => {
+    const newSelectedDays = [...selectedDays];
+    newSelectedDays[index] = event.target.value;
+    setSelectedDays(newSelectedDays);
+
+    const selectedDayPrograms = filteredPrograms[index].filter(program => 
+      new Date(program.time).toLocaleDateString() === event.target.value
+    );
+    const newFilteredClasses = [...filteredClasses];
+    newFilteredClasses[index] = selectedDayPrograms;
+    setFilteredClasses(newFilteredClasses);
   };
 
   const handleBuy = async (programId) => {
@@ -65,15 +85,47 @@ const RegistrationForm = () => {
     }
   };
 
-  const [addMoreChildren, setAddMoreChildren] = useState(null); // State to track whether to add more children
-  const [numberOfChildren, setNumberOfChildren] = useState(0); // State to track number of additional children
-
   const handleAddMoreChildrenChange = (event) => {
     setAddMoreChildren(event.target.value === "yes");
   };
 
   const handleNumberOfChildrenChange = (event) => {
     setNumberOfChildren(parseInt(event.target.value));
+  };
+
+  const renderChildDetails = (index) => {
+    const childPrograms = filteredPrograms[index];
+    const dayOptions = [...new Set(childPrograms.map(program => 
+      new Date(program.time).toLocaleDateString()
+    ))];
+
+    return (
+      <Column key={index}>
+        <Step>
+          <StepTitle>{`${index + 1}st Child Details`}</StepTitle>
+          <FormRow>
+            <InputLabel>Full Name:</InputLabel>
+            <input type="text" name={`childName${index}`} required />
+            <InputLabel>Date of Birth:</InputLabel>
+            <input type="date" name={`childDOB${index}`} required onChange={(e) => handleDOBChange(index, e)} />
+            <InputLabel>Day:</InputLabel>
+            <select name={`childDayOfClass${index}`} required onChange={(e) => handleDayChange(index, e)}>
+              <option value="">Select a day</option>
+              {dayOptions.map((day, i) => (
+                <option key={i} value={day}>{day}</option>
+              ))}
+            </select>
+            <InputLabel>Class:</InputLabel>
+            <select name={`childClass${index}`} required>
+              <option value="">Select a class</option>
+              {filteredClasses[index].map((program, i) => (
+                <option key={i} value={program.name}>{program.name}</option>
+              ))}
+            </select>
+          </FormRow>
+        </Step>
+      </Column>
+    );
   };
 
   return (
@@ -110,13 +162,25 @@ const RegistrationForm = () => {
               <StepTitle>STEP 2 - Child Details</StepTitle>
               <FormRow>
                 <InputLabel>Full Name:</InputLabel>
-                <input type="text" name="childName" required />
+                <input type="text" name="childName0" required />
                 <InputLabel>Date of Birth:</InputLabel>
-                <input type="date" name="childDOB" required onChange={(e) => handleDOBChange(0, e)} />
+                <input type="date" name="childDOB0" required onChange={(e) => handleDOBChange(0, e)} />
                 <InputLabel>Day:</InputLabel>
-                <input type="text" name="childDayOfClass" value={new Date(programDate).toLocaleDateString()} readOnly required />
+                <select name="childDayOfClass0" required onChange={(e) => handleDayChange(0, e)}>
+                  <option value="">Select a day</option>
+                  {[...new Set(filteredPrograms[0].map(program => 
+                    new Date(program.time).toLocaleDateString()
+                  ))].map((day, i) => (
+                    <option key={i} value={day}>{day}</option>
+                  ))}
+                </select>
                 <InputLabel>Class:</InputLabel>
-                <input type="text" name="childClass" value={programName} readOnly required />
+                <select name="childClass0" required>
+                  <option value="">Select a class</option>
+                  {filteredClasses[0].map((program, i) => (
+                    <option key={i} value={program.name}>{program.name}</option>
+                  ))}
+                </select>
               </FormRow>
             </Step>
           </Column>
@@ -155,74 +219,7 @@ const RegistrationForm = () => {
               </select>
             </FormRow>
           )}
-          {addMoreChildren && numberOfChildren >= 1 && (
-            <Column>
-              <Step>
-                <StepTitle>2nd Child Details</StepTitle>
-                <FormRow>
-                  <InputLabel>Full Name:</InputLabel>
-                  <input type="text" name="childName" required />
-                  <InputLabel>Date of Birth:</InputLabel>
-                  <input type="date" name="childDOB" required onChange={(e) => handleDOBChange(1, e)} />
-                  <InputLabel>Day:</InputLabel>
-                  <input type="text" name="childDayOfClass" required />
-                  <InputLabel>Class:</InputLabel>
-                  <input type="text" name="childClass" required />
-                </FormRow>
-              </Step>
-            </Column>
-          )}
-          {addMoreChildren && numberOfChildren >= 2 && (
-            <Column>
-              <Step>
-                <StepTitle>3rd Child Details</StepTitle>
-                <FormRow>
-                  <InputLabel>Full Name:</InputLabel>
-                  <input type="text" name="childName" required />
-                  <InputLabel>Date of Birth:</InputLabel>
-                  <input type="date" name="childDOB" required onChange={(e) => handleDOBChange(2, e)} />
-                  <InputLabel>Day:</InputLabel>
-                  <input type="text" name="childDayOfClass" required />
-                  <InputLabel>Class:</InputLabel>
-                  <input type="text" name="childClass" required />
-                </FormRow>
-              </Step>
-            </Column>
-          )}
-          {addMoreChildren && numberOfChildren >= 3 && (
-            <Column>
-              <Step>
-                <StepTitle>4th Child Details</StepTitle>
-                <FormRow>
-                  <InputLabel>Full Name:</InputLabel>
-                  <input type="text" name="childName" required />
-                  <InputLabel>Date of Birth:</InputLabel>
-                  <input type="date" name="childDOB" required onChange={(e) => handleDOBChange(3, e)} />
-                  <InputLabel>Day:</InputLabel>
-                  <input type="text" name="childDayOfClass" required />
-                  <InputLabel>Class:</InputLabel>
-                  <input type="text" name="childClass" required />
-                </FormRow>
-              </Step>
-            </Column>
-          )}
-          {addMoreChildren && numberOfChildren >= 4 && (
-            <Column>
-              <Step>
-                <StepTitle>5th Child Details</StepTitle>
-                <FormRow>
-                  <InputLabel>Full Name:</InputLabel>
-                  <input type="text" name="childName" required />
-                  <InputLabel>Date of Birth:</InputLabel>
-                  <input type="date" name="childDOB" required onChange={(e) => handleDOBChange(4, e)} />
-                  <InputLabel>Day:</InputLabel>
-                  <input type="text" name="childDayOfClass" required />
-                  <InputLabel>Class:</InputLabel>
-                  <input type="text" name="childClass" required />
-                </FormRow>
-              </Step>
-            </Column>
-          )}
+          {addMoreChildren && Array.from({ length: numberOfChildren }).map((_, i) => renderChildDetails(i + 1))}
         </FormSection>
         <NextButton onClick={() => handleBuy(programID)}>Next</NextButton>
       </Container>
@@ -230,7 +227,7 @@ const RegistrationForm = () => {
       <ProgramsContainer>
         <ProgramsTitle>All Available Programs</ProgramsTitle>
         <ProgramsList>
-          {filteredPrograms.map(program => (
+          {filteredPrograms[0].map(program => (
             <ProgramItem key={program._id}>
               <ProgramName>{program.name}</ProgramName>
               <ProgramDetails>{program.age} yrs | {program.place} ({program.location})</ProgramDetails>
@@ -245,7 +242,6 @@ const RegistrationForm = () => {
 
 export default RegistrationForm;
 
-
 const Container = styled.div`
   background-color: #f5f5ef;
   max-height: 100%;
@@ -259,127 +255,125 @@ const Container = styled.div`
 `;
 
 const Header = styled.div`
-  text-align: left;
-  background-color: #f5f5ef;
-  padding: 2rem;
-  padding-top: 5rem;
+  padding-left: 2rem;
+  padding-top: 1rem;
+  @media (max-width: 767px) {
+    padding-left: 1rem;
+  }
 `;
 
 const Title = styled.h1`
-  color: #2E82BE;
-  font-size: 2rem;
-  font-family: "Secular One", sans-serif;
-  letter-spacing: 2px;
-  margin-bottom: 1rem;
+  font-size: 32px;
+  font-weight: bold;
+  color: #d93b48;
 `;
 
 const Description = styled.p`
-  color: #2E82BE;
-  margin-bottom: 1rem;
-  span {
-    font-weight: bold;
-  }
-`;
-
-const BackButton = styled.a`
-  padding: 0.5rem 1rem;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  text-decoration: underline;
-  color: black;
-
-  &:hover {
-    color: #2E82BE;
-  }
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: -1rem;
 `;
 
 const FormSection = styled.div`
+  margin-top: 2rem;
   display: flex;
-  flex-direction: column;
-  width: 100%;
-  gap: 2rem;
+  flex-wrap: wrap;
 `;
 
 const Column = styled.div`
-  display: flex;
-  width: 100%;
-  flex-grow: 1; /* Allow Column to take up remaining space */
+  flex: 1;
+  padding: 1rem;
+  box-sizing: border-box;
 `;
 
 const Step = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 2rem;
-  flex-grow: 1; /* Allow Step to take up remaining space */
+  background: #fff;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
 `;
 
 const StepTitle = styled.h2`
-  color: #2E82BE;
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
 `;
 
 const FormRow = styled.div`
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   margin-bottom: 1rem;
-  width: 100%;
-  flex-grow: 1; /* Allow FormRow to take up remaining space */
 `;
 
 const InputLabel = styled.label`
-  margin-bottom: 0.5rem;
-  flex: 0 0 10%; /* Adjust the width of the labels as needed */
+  flex: 1;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin-right: 1rem;
+  min-width: 120px;
+`;
+
+const BackButton = styled.a`
+  display: inline-block;
+  margin-top: 1rem;
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  background-color: #d93b48;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  border-radius: 4px;
 `;
 
 const NextButton = styled.button`
+  display: inline-block;
+  margin-top: 1rem;
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  background-color: #d93b48;
   padding: 0.5rem 1rem;
   border: none;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 1rem;
-  text-decoration: underline;
-  color: black;
-  text-align: left;
-
-  &:hover {
-    color: #144f07;
-  }
 `;
 
 const ProgramsContainer = styled.div`
-  background-color: #f5f5ef;
-  width: 90%;
-  margin: 20px auto;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  padding: 2rem;
 `;
 
 const ProgramsTitle = styled.h2`
-  color: #0074cc;
   font-size: 24px;
-  margin-bottom: 20px;
+  font-weight: bold;
+  color: #333;
 `;
 
-const ProgramsList = styled.ul`
-  list-style-type: none;
-  padding: 0;
+const ProgramsList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
 `;
 
-const ProgramItem = styled.li`
-  background-color: white;
-  padding: 15px;
-  border-radius: 5px;
-  margin-bottom: 10px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+const ProgramItem = styled.div`
+  background: #fff;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-right: 1rem;
+  margin-bottom: 1rem;
+  flex: 1;
+  min-width: 220px;
 `;
 
 const ProgramName = styled.h3`
-  color: #0074cc;
   font-size: 20px;
+  font-weight: bold;
+  color: #333;
 `;
 
 const ProgramDetails = styled.p`
   font-size: 16px;
-  margin: 5px 0;
+  color: #666;
 `;
