@@ -35,7 +35,7 @@ const Container = styled.div`
   align-items: center;
   height: 100vh; /* Full viewport height */
   background-color: #1f62121d;
-  .bt{ background-color: #1B590B;
+  .bt{ background-color: #2E82BE;
       color: #ffffff;
       padding: 0.5rem;
       border: none;
@@ -44,7 +44,7 @@ const Container = styled.div`
       font-size: 1rem;
 
       &:hover {
-        background-color: #144f07;
+        background-color: #2E82BE;
       }}
 `;
 
@@ -58,7 +58,7 @@ const LoginForm = styled.div`
 
   h1 {
     margin-bottom: 1.5rem;
-    color: #1B590B;
+    color: #2E82BE;
   }
 
   form {
@@ -67,7 +67,7 @@ const LoginForm = styled.div`
 
     label {
       margin-bottom: 1rem;
-      color: #1B590B;
+      color: #2E82BE;
 
       input {
         width: 100%;
@@ -79,7 +79,7 @@ const LoginForm = styled.div`
     }
 
     button {
-      background-color: #1B590B;
+      background-color: #2E82BE;
       color: #ffffff;
       padding: 0.5rem;
       border: none;
@@ -88,7 +88,7 @@ const LoginForm = styled.div`
       font-size: 1rem;
 
       &:hover {
-        background-color: #144f07;
+        background-color: #2E82BE;
       }
     }
   }

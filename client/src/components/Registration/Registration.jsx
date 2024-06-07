@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
@@ -17,6 +17,39 @@ const RegistrationForm = () => {
   const programFees = queryParams.get("programFees");
   const programID = queryParams.get("programID");
   const programDate = queryParams.get("programDate");
+
+  const [programs, setPrograms] = useState([]);
+  const [filteredPrograms, setFilteredPrograms] = useState([]);
+  const [childDOBs, setChildDOBs] = useState(["", "", "", "", ""]);
+
+  useEffect(() => {
+    axios.get('http://localhost:3001/programs')
+      .then(result => setPrograms(result.data || []))
+      .catch(err => console.log(err));
+  }, []);
+
+  const calculateAge = (dob) => {
+    const birthDate = new Date(dob);
+    const ageDifMs = Date.now() - birthDate.getTime();
+    const ageDate = new Date(ageDifMs);
+    return Math.abs(ageDate.getUTCFullYear() - 1970);
+  };
+
+  const filterProgramsByAge = (age) => {
+    return programs.filter(program => {
+      const [minAge, maxAge] = program.age.split('-').map(Number);
+      return age >= minAge && age <= maxAge;
+    });
+  };
+
+  const handleDOBChange = (index, event) => {
+    const newDOBs = [...childDOBs];
+    newDOBs[index] = event.target.value;
+    setChildDOBs(newDOBs);
+
+    const age = calculateAge(event.target.value);
+    setFilteredPrograms(filterProgramsByAge(age));
+  };
 
   const handleBuy = async (programId) => {
     const stripe = await stripePromise;
@@ -79,11 +112,11 @@ const RegistrationForm = () => {
                 <InputLabel>Full Name:</InputLabel>
                 <input type="text" name="childName" required />
                 <InputLabel>Date of Birth:</InputLabel>
-                <input type="date" name="childDOB" required />
+                <input type="date" name="childDOB" required onChange={(e) => handleDOBChange(0, e)} />
                 <InputLabel>Day:</InputLabel>
-  <input type="text" name="childDayOfClass" value={new Date(programDate).toLocaleDateString()} readOnly required />
-  <InputLabel>Class:</InputLabel>
-  <input type="text" name="childClass" value={programName} readOnly required />
+                <input type="text" name="childDayOfClass" value={new Date(programDate).toLocaleDateString()} readOnly required />
+                <InputLabel>Class:</InputLabel>
+                <input type="text" name="childClass" value={programName} readOnly required />
               </FormRow>
             </Step>
           </Column>
@@ -122,7 +155,7 @@ const RegistrationForm = () => {
               </select>
             </FormRow>
           )}
-          {addMoreChildren && numberOfChildren  >= 1 && (
+          {addMoreChildren && numberOfChildren >= 1 && (
             <Column>
               <Step>
                 <StepTitle>2nd Child Details</StepTitle>
@@ -130,7 +163,7 @@ const RegistrationForm = () => {
                   <InputLabel>Full Name:</InputLabel>
                   <input type="text" name="childName" required />
                   <InputLabel>Date of Birth:</InputLabel>
-                  <input type="date" name="childDOB" required />
+                  <input type="date" name="childDOB" required onChange={(e) => handleDOBChange(1, e)} />
                   <InputLabel>Day:</InputLabel>
                   <input type="text" name="childDayOfClass" required />
                   <InputLabel>Class:</InputLabel>
@@ -139,7 +172,7 @@ const RegistrationForm = () => {
               </Step>
             </Column>
           )}
-          {addMoreChildren && numberOfChildren  >= 2 && (
+          {addMoreChildren && numberOfChildren >= 2 && (
             <Column>
               <Step>
                 <StepTitle>3rd Child Details</StepTitle>
@@ -147,7 +180,7 @@ const RegistrationForm = () => {
                   <InputLabel>Full Name:</InputLabel>
                   <input type="text" name="childName" required />
                   <InputLabel>Date of Birth:</InputLabel>
-                  <input type="date" name="childDOB" required />
+                  <input type="date" name="childDOB" required onChange={(e) => handleDOBChange(2, e)} />
                   <InputLabel>Day:</InputLabel>
                   <input type="text" name="childDayOfClass" required />
                   <InputLabel>Class:</InputLabel>
@@ -156,7 +189,7 @@ const RegistrationForm = () => {
               </Step>
             </Column>
           )}
-          {addMoreChildren && numberOfChildren  >= 3 && (
+          {addMoreChildren && numberOfChildren >= 3 && (
             <Column>
               <Step>
                 <StepTitle>4th Child Details</StepTitle>
@@ -164,7 +197,7 @@ const RegistrationForm = () => {
                   <InputLabel>Full Name:</InputLabel>
                   <input type="text" name="childName" required />
                   <InputLabel>Date of Birth:</InputLabel>
-                  <input type="date" name="childDOB" required />
+                  <input type="date" name="childDOB" required onChange={(e) => handleDOBChange(3, e)} />
                   <InputLabel>Day:</InputLabel>
                   <input type="text" name="childDayOfClass" required />
                   <InputLabel>Class:</InputLabel>
@@ -181,7 +214,7 @@ const RegistrationForm = () => {
                   <InputLabel>Full Name:</InputLabel>
                   <input type="text" name="childName" required />
                   <InputLabel>Date of Birth:</InputLabel>
-                  <input type="date" name="childDOB" required />
+                  <input type="date" name="childDOB" required onChange={(e) => handleDOBChange(4, e)} />
                   <InputLabel>Day:</InputLabel>
                   <input type="text" name="childDayOfClass" required />
                   <InputLabel>Class:</InputLabel>
@@ -193,6 +226,19 @@ const RegistrationForm = () => {
         </FormSection>
         <NextButton onClick={() => handleBuy(programID)}>Next</NextButton>
       </Container>
+
+      <ProgramsContainer>
+        <ProgramsTitle>All Available Programs</ProgramsTitle>
+        <ProgramsList>
+          {filteredPrograms.map(program => (
+            <ProgramItem key={program._id}>
+              <ProgramName>{program.name}</ProgramName>
+              <ProgramDetails>{program.age} yrs | {program.place} ({program.location})</ProgramDetails>
+              <ProgramDetails>Fees: ${program.fees} per week</ProgramDetails>
+            </ProgramItem>
+          ))}
+        </ProgramsList>
+      </ProgramsContainer>
     </>
   );
 };
@@ -298,4 +344,42 @@ const NextButton = styled.button`
   &:hover {
     color: #144f07;
   }
+`;
+
+const ProgramsContainer = styled.div`
+  background-color: #f5f5ef;
+  width: 90%;
+  margin: 20px auto;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+`;
+
+const ProgramsTitle = styled.h2`
+  color: #0074cc;
+  font-size: 24px;
+  margin-bottom: 20px;
+`;
+
+const ProgramsList = styled.ul`
+  list-style-type: none;
+  padding: 0;
+`;
+
+const ProgramItem = styled.li`
+  background-color: white;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+`;
+
+const ProgramName = styled.h3`
+  color: #0074cc;
+  font-size: 20px;
+`;
+
+const ProgramDetails = styled.p`
+  font-size: 16px;
+  margin: 5px 0;
 `;

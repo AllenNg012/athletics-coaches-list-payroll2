@@ -20,9 +20,9 @@ const Home = () => {
       <Program />
       <Programs />
       <About />
-      <About2 />     
-      <FAQ />
+      <About2 />         
       <Review />
+      <FAQ />
       <Footer />
     </Container>
   );
