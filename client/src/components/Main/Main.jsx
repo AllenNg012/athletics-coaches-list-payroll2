@@ -2,6 +2,8 @@
 import React from "react";
 import styled from "styled-components";
 import { Slide } from "react-awesome-reveal";
+import bgi from "../background.png";
+
 
 
 const Main = () => {
@@ -25,6 +27,9 @@ margin: auto;
 `
 
 const BGC = styled.div`
+  background-image: url(${bgi});
+  background-position: center;
+  background-repeat: repeat;
     background-color: #f5f5ef;
     padding-top: 1rem;
   padding-bottom: 10rem;
@@ -32,7 +37,7 @@ const BGC = styled.div`
     padding-top: 3rem;
   padding-bottom: 3rem;  }
   h1 {
-    color: #12721f;
+    color: #2E82BE;
     font-size: 3rem;
     text-transform: capitalize;
     letter-spacing: 2px;

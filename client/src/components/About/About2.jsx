@@ -74,9 +74,8 @@ const Content = styled.div`
 
 const Texts = styled.div`
   flex: 1;
-  color: #88954c;
   h1 {
-    color: #12721f;
+    color: #2E82BE;
     font-size: 3.5rem;
     text-transform: capitalize;
     letter-spacing: 2px;

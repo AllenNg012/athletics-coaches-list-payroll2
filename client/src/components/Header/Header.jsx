@@ -34,10 +34,12 @@ const Container = styled.div`
     left: 0;
     width: 100%;
     z-index: 1000;
-    background-color: #1B590B;
+    background-color: #2E82BE;
     padding: 1.5rem 1rem;
     display: flex;
     animation: header 500ms ease-in-out;
+    border-bottom-style: solid;
+  border-bottom-color: #000000;
         @media(max-width: 640px){
         padding: 1rem;
     }
@@ -96,7 +98,7 @@ const Nav = styled.div`
         height: ${props => props.bar ? "100vh" : "0"};
         display: flex;
         flex-direction: column;
-        background-color: #1B590B;
+        background-color: #2E82BE;
         justify-content: center;
         align-items: center;
         font-size: 2rem;

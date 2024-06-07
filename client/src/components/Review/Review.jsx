@@ -5,6 +5,8 @@ import { Slide } from "react-awesome-reveal";
 import GoogleReviewWidget from "../GoogleReview/GoogleReviewWidget";
 import review from "./review.png";
 import logo from "./googlelogo.png"
+import bgi from "../background.png";
+
 
 const ProfComponent = () => {
   return (
@@ -96,7 +98,7 @@ const ImageContainer = styled.div`
 `;
 
 const Texts = styled.div`
-  color: #88954c;
+  color: #000000;
   margin-left:5rem;
   margin-right:5rem;
 
@@ -105,9 +107,10 @@ const Texts = styled.div`
     font-weight: 500;
   }
   h1 {
-    color: #12721f;
+    color: #2E82BE;
     font-size: 2rem;
     font-family: "Secular One", sans-serif;
+    font-weight: bold;
     letter-spacing: 2px;
   }
   h3 {

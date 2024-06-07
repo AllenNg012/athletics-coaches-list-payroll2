@@ -7,11 +7,12 @@ import FAQ from "./FAQ/FAQ"
 import Main from "./Main/Main";
 import Program from "./Program/Program";
 import Programs from "./Program/Programs";
+import bgi from "./background.png";
+
 
 const Home = () => {
     return (
     <Container> 
-      <br/>
       <br/>
       <br/>
       <br/>
@@ -29,7 +30,10 @@ const Home = () => {
 
 export default Home;
 
-const Container = styled.div`    background-color: #f5f5ef;
+const Container = styled.div`    
+background-image: url(${bgi});
+  background-repeat: repeat;
+  background-color: #f5f5ef;
 `;
 
 

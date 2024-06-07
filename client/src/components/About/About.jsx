@@ -75,14 +75,12 @@ const Content = styled.div`
 
 const Texts = styled.div`
   flex: 1;
-  color: #88954c;
   margin-top: 7rem;
   @media (max-width: 640px) {
       font-size: 2rem;
       margin-top: 1rem;
   }
   h1 {
-    color: #12721f;
     font-size: 3.5rem;
     text-transform: capitalize;
     letter-spacing: 2px;
@@ -119,7 +117,7 @@ const Profile = styled.div`
   align-items: center;
   flex-direction: column;
   h1 {
-    color: #12721f;
+    color: #2E82BE;
     font-size: 3.5rem;
     text-transform: capitalize;
     letter-spacing: 2px;
