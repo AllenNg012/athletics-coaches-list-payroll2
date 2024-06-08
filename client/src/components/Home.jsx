@@ -17,8 +17,8 @@ const Home = () => {
       <br/>
       <br/>
       <Main />
-      <Program />
       <Programs />
+      <Program />
       <About />
       <About2 />         
       <Review />

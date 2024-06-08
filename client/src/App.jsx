@@ -11,6 +11,7 @@ import Home from "./components/Home";
 import Header from "./components/Header/Header";
 import Login from "./components/Login/Login";
 import Registration from "./components/Registration/Registration";
+import Registration2 from "./components/Registration2/Registration2";
 
 import Programs from './Programs';
 import CreateProgram from './CreateProgram';
@@ -30,6 +31,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/Login" element={<Login />} />
         <Route path="/Registration" element={<Registration />} />
+        <Route path="/Registration2" element={<Registration2 />} />
         <Route path='/coach' element={<Users />}></Route>
         <Route path='/payroll' element={<Payroll />}></Route>
         <Route path='/create' element={<CreateUser />}></Route>
@@ -40,7 +42,6 @@ function App() {
          <Route path='/update-program/:id' element={<UpdateProgram />} ></Route>
          <Route path='/success' element={<Success />} ></Route>
          <Route path='/cancel' element={<Cancel />} ></Route>
-
       </Routes>
     </Router>
   );
@@ -49,9 +50,10 @@ function App() {
 // Conditionally render Header based on location
 function ConditionalHeader() {
   const location = useLocation();
-  const showHeader = location.pathname === "/" || location.pathname === "/Registration"; // Check if pathname is "/" or "/Registration"
+  const showHeader = location.pathname === "/" || !location.pathname.startsWith("/Registration");
 
   return showHeader ? <Header /> : null;
 }
+
 
 export default App;

@@ -1,173 +1,213 @@
-/* eslint-disable no-unused-vars */
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { Slide } from "react-awesome-reveal";
-import bgi from "../background.png";
+import { loadStripe } from "@stripe/stripe-js";
 
-
-
-const Program = () => {
-  return (
-    <BGC>
-      <TopContainer>
-      <h1>Our Program</h1>
-      </TopContainer>
-    <Container id="Program">
-      
-    </Container>
-    </BGC>
-  );
-};
-
-export default Program;
-
-const TopContainer = styled.div`
-width:85%;
-margin: auto;
-`
-
-const BGC = styled.div`
-
-background-image: url(${bgi});
-  background-position: center;
-  background-repeat: repeat;
-  background-color: #f5f5ef;
-
-    padding-top: 1rem;
-  padding-bottom: 10rem;
-  @media (max-width: 640px) {
-    padding-top: 3rem;
-  padding-bottom: 3rem;  }
-  h1 {
-    color: #2E82BE;
-    font-size: 3rem;
-    text-transform: capitalize;
-    letter-spacing: 2px;
-    @media (max-width: 640px) {
-      font-size: 2rem;
-  }}
-  @media (max-width: 790px) {
-    width: 20rem;
-  }
-  @media (max-width: 660px) {
-    width: 18rem;
-  }
-  @media (max-width: 640px) {
-    width: 100%;
-  }
-`
+const stripePromise = loadStripe("pk_test_51PNSST2KpyYZmvZEQWr6oqPxWFqTeH6KbyUOQEYblEKHM3U7XhTCYl4GU6YJ2lYJgmIHB2n0od0V28dGPfw0sXSP00BKh7CEYT");
 
 const Container = styled.div`
   display: flex;
-  justify-content: center;
-
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  @media (max-width: 840px) {
-    width: 90%;
-  }
-
-  
-`;
-
-const Content = styled.div`
-  display: flex;
-  width: 100%;
-  gap: 2rem;
-  justify-content: space-between;
-  @media (max-width: 640px) {
-    flex-direction: column;
-    gap: 1rem;
-  }
-`;
-
-const Texts = styled.div`
-  flex: 2;
-  color: #88954c;
-  h4 {
-    padding: 1rem 0;
-    font-weight: 500;
-  }
-  h1 {
-    color: #12721f;
-    font-size: 2rem;
-    font-family: "Secular One", sans-serif;
-    letter-spacing: 2px;
-  }
-  h3 {
-    font-weight: 500;
-    font-size: 1.2rem;
-    padding-bottom: 1.2rem;
-    text-transform: capitalize;
-  }
-  p {
-    font-weight: 300;
-  }
-  span{  font-weight: bold;
-}
-`;
-
-const Social = styled.div`
-  margin-top: 3rem;
-  display: flex;
+  flex-direction: column;
   align-items: center;
-  p {
-    font-size: 0.9rem;
-    @media (max-width: 690px) {
-      font-size: 0.8rem;
+  background: #f5f5ef;
+  min-height: 100vh;
+  padding-bottom: 5vh;
+  padding-top: 10vh;
+`;
+
+const TableContainer = styled.div`
+  width: 75%;
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 3vw;
+`;
+
+const StyledTable = styled.table`
+  width: 100%;
+  table-layout: fixed;
+  tr { text-align: center; }
+`;
+
+const StyledTh = styled.th`
+  width: ${({ width }) => width};
+  overflow: hidden;
+  cursor: pointer;
+`;
+
+const StyledTd = styled.td`
+  width: ${({ width }) => width};
+  overflow: hidden;
+`;
+
+const TopDiv = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-left: 1vw;
+`;
+
+const FilterContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+`;
+
+const FilterSelect = styled.select`
+  margin-right: 16px;
+  padding: 4px;
+`;
+
+const ResetButton = styled.button`
+  padding: 8px 16px;
+`;
+
+function Programs() {
+  const [programs, setPrograms] = useState([]);
+  const [sortKey, setSortKey] = useState(null);
+  const [sortOrder, setSortOrder] = useState(1);
+  const [ageFilter, setAgeFilter] = useState('');
+  const [sportFilter, setSportFilter] = useState('');
+  const [locationFilter, setLocationFilter] = useState('');
+  const [genderFilter, setGenderFilter] = useState('');
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    axios.get('http://localhost:3001/programs')
+      .then(result => setPrograms(result.data || []))
+      .catch(err => console.log(err));
+  }, []);
+
+  const handleSort = (key) => {
+    if (sortKey === key) {
+      setSortOrder(-sortOrder);
+    } else {
+      setSortKey(key);
+      setSortOrder(1);
     }
+  };
+
+  const handleResetFilters = () => {
+    setAgeFilter('');
+    setSportFilter('');
+    setLocationFilter('');
+    setGenderFilter('');
+  };
+
+  let filteredPrograms = programs.slice();
+
+  if (ageFilter) {
+    filteredPrograms = filteredPrograms.filter(program => program.age === ageFilter);
   }
-  .social-icons {
-    display: inline-flex;
-    align-items: center;
-    margin-left: 0.5rem; /* Add some spacing between the text and icons */
-    span {
-      width: 2rem;
-      height: 1rem;
-      position: relative;
-      margin-left: 0.5rem; /* Add spacing between icons */
-      @media (max-width: 690px) {     
-        height: 1.5rem; 
-        margin-left: 0.5rem;
-        padding: 1rem;
+  if (sportFilter) {
+    filteredPrograms = filteredPrograms.filter(program => program.sport === sportFilter);
+  }
+  if (locationFilter) {
+    filteredPrograms = filteredPrograms.filter(program => program.location === locationFilter);
+  }
+  if (genderFilter) {
+    filteredPrograms = filteredPrograms.filter(program => program.gender === genderFilter);
+  }
+
+  filteredPrograms.sort((a, b) => {
+    if (sortKey) {
+      if (typeof a[sortKey] === 'string') {
+        return a[sortKey].localeCompare(b[sortKey]) * sortOrder;
+      } else {
+        return (a[sortKey] - b[sortKey]) * sortOrder;
       }
     }
-    a {
-      color: #1b590b;
-      position: absolute;
-      top: 55%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-    @media (max-width: 690px) {     
-         font-size: 1.5rem; /* Increase icon size for smaller screens */
-  }
-  }
-`;
+    return 0;
+  });
 
-const Profile = styled.div`
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  
-  @media (max-width: 790px) {
-    width: 20rem;
-  }
-  @media (max-width: 660px) {
-    width: 18rem;
-  }
-  @media (max-width: 640px) {
-    width: 100%;
-  }
-  .contact1 {
-    width: 100%;
-    padding-top: 3vw;
-    height: 9cm;
-    max-width: 100%;
-    @media (max-width: 640px) {
-      height: auto;
-  }
-  }
-`;
+  const handleBuy = async (programId) => {
+    const stripe = await stripePromise;
+
+    const response = await axios.post('http://localhost:3001/create-checkout-session', { programId });
+
+    const sessionId = response.data.id;
+
+    const { error } = await stripe.redirectToCheckout({
+      sessionId,
+    });
+
+    if (error) {
+      console.error("Stripe checkout error:", error);
+    }
+  };
+
+  return (
+    <Container id="Location">
+      <TableContainer>
+        <TopDiv>
+          <h1>Case2</h1>
+        </TopDiv>
+        <FilterContainer>
+          <FilterSelect value={ageFilter} onChange={(e) => setAgeFilter(e.target.value)}>
+            <option value="">All Ages</option>
+            <option value="3-4">3-4</option>
+            <option value="5-6">5-6</option>
+            <option value="7-8">7-8</option>
+            <option value="9-10">9-10</option>
+          </FilterSelect>
+          <FilterSelect value={sportFilter} onChange={(e) => setSportFilter(e.target.value)}>
+            <option value="">All Sports</option>
+            <option value="Basketball">Basketball</option>
+            <option value="Soccer">Soccer</option>
+            <option value="Baseball">Baseball</option>
+          </FilterSelect>
+          <FilterSelect value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)}>
+            <option value="">All Locations</option>
+            <option value="Vaughan">Vaughan</option>
+            <option value="Markham">Markham</option>
+            <option value="Aurora">Aurora</option>
+            <option value="Newmarket">Newmarket</option>
+            <option value="Mississauga">Mississauga</option>
+            <option value="Brampton">Brampton</option>
+            <option value="East York">East York</option>
+            <option value="Midtown">Midtown</option>
+          </FilterSelect>
+          <FilterSelect value={genderFilter} onChange={(e) => setGenderFilter(e.target.value)}>
+            <option value="">All Genders</option>
+            <option value="Girls">Girls</option>
+            <option value="CO-ED/All Genders">CO-ED/All Genders</option>
+          </FilterSelect>
+          <ResetButton onClick={handleResetFilters}>Reset Filters</ResetButton>
+        </FilterContainer>
+        <StyledTable className="table">
+          <thead>
+            <tr>
+              <StyledTh width="10%" onClick={() => handleSort("name")}>Name {sortKey === "name" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
+              <StyledTh width="15%" onClick={() => handleSort("time")}>Time {sortKey === "time" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
+              <StyledTh width="25%" onClick={() => handleSort("place")}>Place {sortKey === "place" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
+              <StyledTh width="10%" onClick={() => handleSort("fees")}>Program Fees {sortKey === "fees" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
+              <StyledTh width="15%">Register</StyledTh>
+              <StyledTh width="15%">Info</StyledTh>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredPrograms && filteredPrograms.map((program, index) => (
+              <tr key={index}>
+                <StyledTd width="10%">{program.name}</StyledTd>
+                <StyledTd width="15%">{new Date(program.time).toLocaleString()}</StyledTd>
+                <StyledTd width="25%">{`${program.place} (${program.location})`}</StyledTd>
+                <StyledTd width="10%">${program.fees} per week</StyledTd>
+                <StyledTd width="15%">
+                  <Link to={`/survey?programName=${program.name}&programAge=${program.age}&programPlace=${program.place}&programLocation=${program.location}&programFees=${program.fees}&programID=${program._id}&programDate=${program.time}`} className="btn btn-success">Register</Link>
+                </StyledTd>
+                <StyledTd width="15%">
+                  <Link to={`/`}>Click for more information</Link>
+                </StyledTd>
+              </tr>
+            ))}
+          </tbody>
+        </StyledTable>
+      </TableContainer>
+    </Container>
+  );
+}
+
+export default Programs;

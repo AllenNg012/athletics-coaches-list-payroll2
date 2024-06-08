@@ -1,13 +1,13 @@
-/* eslint-disable no-unused-vars */
-import React from "react";
+// eslint-disable-next-line no-unused-vars
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
-
 import { loadStripe } from "@stripe/stripe-js";
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
 
 const stripePromise = loadStripe("pk_test_51PNSST2KpyYZmvZEQWr6oqPxWFqTeH6KbyUOQEYblEKHM3U7XhTCYl4GU6YJ2lYJgmIHB2n0od0V28dGPfw0sXSP00BKh7CEYT");
-
 
 const RegistrationForm = () => {
   const location = useLocation();
@@ -18,28 +18,145 @@ const RegistrationForm = () => {
   const programLocation = queryParams.get("programLocation");
   const programFees = queryParams.get("programFees");
   const programID = queryParams.get("programID");
+  const programDate = queryParams.get("programDate");
+  const addMoreChildren = queryParams.get("addMoreChildren") === "true";
+  const numberOfChildren = parseInt(queryParams.get("numberOfChildren"), 10);
 
+  const [programs, setPrograms] = useState([]);
+  const [childDOBs, setChildDOBs] = useState(["", "", "", "", ""]);
+  const [childSelectedTimes, setChildSelectedTimes] = useState([[], [], [], [], []]);
+  const [childSelectedClasses, setChildSelectedClasses] = useState([[], [], [], [], []]);
+  const [selectedProgramFees, setSelectedProgramFees] = useState([null, null, null, null, null]);
+  const [selectedPrograms, setSelectedPrograms] = useState([{ programID, programFees, programName, programPlace, programSport: queryParams.get("sport") }]);
+  const [discountCode, setDiscountCode] = useState("");
 
-  const handleBuy = async (programId) => {
-    const stripe = await stripePromise;
+  useEffect(() => {
+    axios.get('http://localhost:3001/programs')
+      .then(result => setPrograms(result.data || []))
+      .catch(err => console.log(err));
+  }, []);
 
-    const response = await axios.post('http://localhost:3001/create-checkout-session', { programId });
+  const calculateAge = (dob) => {
+    const birthDate = new Date(dob);
+    const ageDifMs = Date.now() - birthDate.getTime();
+    const ageDate = new Date(ageDifMs);
+    return Math.abs(ageDate.getUTCFullYear() - 1970);
+  };
 
-    const sessionId = response.data.id;
+  const filterProgramsByAge = (age) => {
+    return programs.filter(program => {
+      const [minAge, maxAge] = program.age.split('-').map(Number);
+      return age >= minAge && age <= maxAge;
+    });
+  };
 
-    const { error } = await stripe.redirectToCheckout({
-      sessionId,
+  const handleDOBChange = (index, event) => {
+    const newDOBs = [...childDOBs];
+    newDOBs[index] = event.target.value;
+    setChildDOBs(newDOBs);
+
+    const age = calculateAge(event.target.value);
+    const filtered = filterProgramsByAge(age);
+    const newChildSelectedTimes = [...childSelectedTimes];
+    newChildSelectedTimes[index] = filtered;
+    setChildSelectedTimes(newChildSelectedTimes);
+    const newChildSelectedClasses = [...childSelectedClasses];
+    newChildSelectedClasses[index] = [];
+    setChildSelectedClasses(newChildSelectedClasses);
+  };
+
+  const handleTimeChange = (index, event) => {
+    const selectedDay = event.target.value;
+    const filtered = childSelectedTimes[index].filter(program => {
+      const programDate = new Date(program.time).toLocaleDateString();
+      return programDate === selectedDay;
     });
 
-    if (error) {
-      console.error("Stripe checkout error:", error);
+    const newChildSelectedClasses = [...childSelectedClasses];
+    newChildSelectedClasses[index] = filtered;
+    setChildSelectedClasses(newChildSelectedClasses);
+
+    // Clear the selected class and fees when the day changes
+    const newSelectedProgramFees = [...selectedProgramFees];
+    newSelectedProgramFees[index] = null;
+    setSelectedProgramFees(newSelectedProgramFees);
+  };
+
+  const handleClassChange = (index, event) => {
+    const selectedClassName = event.target.value;
+    const selectedProgram = programs.find(program => program.name === selectedClassName);
+
+    const newSelectedProgramFees = [...selectedProgramFees];
+    newSelectedProgramFees[index] = selectedProgram ? selectedProgram.fees : null;
+    setSelectedProgramFees(newSelectedProgramFees);
+
+    const newSelectedPrograms = [...selectedPrograms];
+    newSelectedPrograms[index] = { programID: selectedProgram._id, programFees: selectedProgram.fees, programName: selectedProgram.name, programPlace: selectedProgram.place, programSport: selectedProgram.sport };
+    setSelectedPrograms(newSelectedPrograms);
+
+    console.log("Selected Programs:", newSelectedPrograms);
+  };
+
+  const handleDiscountCodeChange = (event) => {
+    setDiscountCode(event.target.value);
+  };
+
+  const handleBuy = async () => {
+    const stripe = await stripePromise;
+
+    const lineItems = selectedPrograms.map((program) => ({
+      price_data: {
+        currency: 'cad',
+        product_data: {
+          name: program.programName,
+          description: `${program.programSport} at ${program.programPlace}`,
+        },
+        unit_amount: program.programFees * 100,
+      },
+      quantity: 1,
+    }));
+
+    console.log("Line Items:", lineItems);
+
+    try {
+      const response = await axios.post('http://localhost:3001/create-checkout-session', { lineItems, discountCode });
+
+      console.log("Stripe Response:", response.data);
+
+      const sessionId = response.data.id;
+
+      const { error } = await stripe.redirectToCheckout({
+        sessionId,
+      });
+
+      if (error) {
+        console.error("Stripe checkout error:", error);
+      }
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
     }
+  };
+
+  // Create a function to render program names on the calendar
+  const renderProgramsOnDate = (date) => {
+    const programsOnDate = programs.filter(program => {
+      const programDate = new Date(program.time).toLocaleDateString();
+      return programDate === date.toLocaleDateString();
+    });
+
+    return (
+      <div>
+        {programsOnDate.map(program => (
+          <div key={program._id} style={{ fontSize: '12px', color: '#000' }}>{program.name}</div>
+        ))}
+      </div>
+    );
   };
 
   return (
     <>
       <Header>
-        <Title>REGISTRATION FORM</Title>
+        <Title>REGISTRATION FORM(Case 2)</Title>
         <Description>
           <span>You have selected:</span> {programName} ({programAge} yrs) at {programPlace} ({programLocation})
         </Description>
@@ -49,205 +166,188 @@ const RegistrationForm = () => {
         <FormSection>
           <Column>
             <Step>
-              <h2>STEP 1 - Parent/Guardian Information</h2>
-              <Horizontal>
-                <FormRow>
-                <label>Email:</label>
-                <input type="email" name="parentEmail" required />
-              </FormRow>
+              <StepTitle>STEP 1 - Parent/Guardian Information</StepTitle>
               <FormRow>
-                <label>Full Name:</label>
+                <InputLabel>Email:</InputLabel>
+                <input type="email" name="parentEmail" required />
+                <InputLabel>Full Name:</InputLabel>
                 <input type="text" name="parentName" required />
               </FormRow>
-              </Horizontal>
-              <Horizontal>
               <FormRow>
-                <label>Phone Number:</label>
+                <InputLabel>Phone Number:</InputLabel>
                 <input type="tel" name="parentPhone" required />
-              </FormRow>
-              <FormRow>
-                <label>Address:</label>
+                <InputLabel>Address:</InputLabel>
                 <input type="text" name="parentAddress" required />
-              </FormRow></Horizontal>
-            </Step>
-            <Step>
-              <h2>STEP 2 - Child Details</h2>
-              <Horizontal>
-              <FormRow>
-                <label>Full Name:</label>
-                <input type="text" name="childName" required />
               </FormRow>
-              <FormRow>
-                <label>Date of Birth (YYYY/MM/DD):</label>
-                <input type="date" name="childDOB" required />
-              </FormRow>
-              </Horizontal>
             </Step>
           </Column>
           <Column>
             <Step>
-              <h4>Optional Parent #2</h4>
-              <Horizontal>         
+              <StepTitle>STEP 2 - Child Details</StepTitle>
               <FormRow>
-                <label>Email:</label>
-                <input type="email" name="parent2Email" />
+                <InputLabel>Full Name:</InputLabel>
+                <input type="text" name="childName" required />
+                <InputLabel>Date of Birth:</InputLabel>
+                <input type="date" name="childDOB" required onChange={(e) => handleDOBChange(0, e)} />
+                <InputLabel>Day:</InputLabel>
+                <input type="text" name="childDayOfClass" value={new Date(programDate).toLocaleDateString()} readOnly required />
+                <InputLabel>Class:</InputLabel>
+                <input type="text" name="childClass" value={programName} readOnly required />
               </FormRow>
-              <FormRow>
-                <label>Full Name:</label>
-                <input type="text" name="parent2Name" />
-              </FormRow>
-              </Horizontal>   
-              <Horizontal>         
-
-              <FormRow>
-                <label>Phone Number:</label>
-                <input type="tel" name="parent2Phone" />
-              </FormRow>
-              <FormRow>
-                <label>Address:</label>
-                <input type="text" name="parent2Address" />
-              </FormRow>
-              </Horizontal>   
             </Step>
-            <Step2>
-            <Step>
-              <h4>Optional Child #2</h4>
-              <Horizontal >              
-
-              <FormRow>
-                <label>Full Name:</label>
-                <input type="text" name="child2Name" />
-              </FormRow>
-              <FormRow>
-                <label>Date of Birth (YYYY/MM/DD):</label>
-                <input type="date" name="child2DOB" />
-              </FormRow>
-              </Horizontal >
-            </Step></Step2>
           </Column>
+          {addMoreChildren && Array.from({ length: numberOfChildren }, (_, index) => (
+            <Column key={index + 1}>
+              <Step>
+                <StepTitle>{index + 2}nd Child Details</StepTitle>
+                <FormRow>
+                  <InputLabel>Full Name:</InputLabel>
+                  <input type="text" name="childName" required />
+                  <InputLabel>Date of Birth:</InputLabel>
+                  <input type="date" name="childDOB" required onChange={(e) => handleDOBChange(index + 1, e)} />
+                  <InputLabel>Day:</InputLabel>
+                  <select name="childDayOfClass" required onChange={(e) => handleTimeChange(index + 1, e)}>
+                    <option value="">Select a day</option>
+                    {childSelectedTimes[index + 1].map(program => (
+                      <option key={program._id} value={new Date(program.time).toLocaleDateString()}>
+                        {new Date(program.time).toLocaleDateString()}
+                      </option>
+                    ))}
+                  </select>
+                  <InputLabel>Class:</InputLabel>
+                  <select name="childClass" required onChange={(e) => handleClassChange(index + 1, e)}>
+                    <option value="">Select a class</option>
+                    {childSelectedClasses[index + 1].map(program => (
+                      <option key={program._id} value={program.name}>
+                        {program.name}
+                      </option>
+                    ))}
+                  </select>
+                  {selectedProgramFees[index + 1] !== null && (
+                    <p>Fees: ${selectedProgramFees[index + 1]}</p>
+                  )}
+                </FormRow>
+              </Step>
+            </Column>
+          ))}
         </FormSection>
-       {/* <NextButton type="submit">Next</NextButton>*/}
-        <NextButton onClick={() => handleBuy(programID)} >Next</NextButton>
+        <FormRow>
+          <InputLabel>Discount Code:</InputLabel>
+          <input type="text" value={discountCode} onChange={handleDiscountCodeChange} />
+        </FormRow>
+        <ButtonRow>
+          <ConfirmButton onClick={handleBuy}>Confirm & Pay</ConfirmButton>
+        </ButtonRow>
+
+        <CalendarContainer>
+          <TableTitle>Available Programs</TableTitle>
+          <Calendar
+            tileContent={({ date, view }) => view === 'month' && renderProgramsOnDate(date)}
+          />
+        </CalendarContainer>
       </Container>
     </>
   );
 };
 
-export default RegistrationForm;
-
-const Horizontal =styled.div`
-  display: flex;
-  @media (max-width: 767px) {
-    flex-direction: column; /* For screens smaller than 768px, stack items vertically */
-  }
-`
-const Step2 = styled.div`
-margin-top: 0.5rem;
-`
-
-const Container = styled.div`
-  background-color: #f5f5ef;
-  max-height:100%;
-  height : 500px ;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start; 
-  padding-left: 2rem;
-  margin: 0; 
-  @media (max-width: 767px) {
-    padding-left: 1rem;
-  }
-`;
-
-
 const Header = styled.div`
-  text-align: left;
-  background-color: #f5f5ef;
-  padding: 2rem ;
-  padding-top:5rem ;
+  background-color: #f5f5f5;
+  padding: 20px;
+  text-align: center;
 `;
 
 const Title = styled.h1`
-  color: #12721f;
-  font-size: 2rem;
-  font-family: "Secular One", sans-serif;
-  letter-spacing: 2px;
-  margin-bottom: 1rem;
+  margin: 0;
+  color: #333;
 `;
 
 const Description = styled.p`
-  color: #88954c;
-  margin-bottom: 1rem;
-  span{font-weight:bold}
+  margin: 10px 0;
+  color: #666;
 `;
 
 const BackButton = styled.a`
-  padding: 0.5rem 1rem;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  text-decoration: underline;
-  color: black;
+  display: inline-block;
+  margin-top: 10px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
 
   &:hover {
-    color: #144f07; /* Change color on hover */
+    background-color: #0056b3;
   }
 `;
 
+const Container = styled.div`
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
+`;
 
 const FormSection = styled.div`
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  gap: 2rem;
+  margin-bottom: 20px;
 `;
 
 const Column = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 48%;
+  margin-bottom: 20px;
 `;
 
 const Step = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 2rem;
+  margin-bottom: 20px;
+`;
 
-  h2 {
-    color: #12721f;
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-  }
+const StepTitle = styled.h2`
+  margin-bottom: 10px;
+  color: #333;
 `;
 
 const FormRow = styled.div`
   display: flex;
-  flex-direction: column;
-  margin-bottom: 1rem;
-  width: 100%; /* Set width to 100% to occupy full space */
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 10px;
 
-  label {
-    margin-bottom: 0.5rem;
-  }
-
-  input {
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    width: calc(80% - 0.5rem); /* Set input width to occupy half the space */
-    margin-right: 0.5rem; /* Add margin between inputs */
+  & > * {
+    margin-right: 10px;
   }
 `;
 
-const NextButton = styled.a`
- padding: 0.5rem 1rem;
+const InputLabel = styled.label`
+  flex: 1 1 150px;
+  margin-bottom: 5px;
+  color: #666;
+`;
+
+const ButtonRow = styled.div`
+  text-align: center;
+`;
+
+const ConfirmButton = styled.button`
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
   border: none;
+  border-radius: 5px;
   cursor: pointer;
-  font-size: 1rem;
-  text-decoration: underline;
-  color: black;
 
   &:hover {
-    color: #144f07; /* Change color on hover */
+    background-color: #218838;
   }
 `;
+
+const CalendarContainer = styled.div`
+  margin-top: 40px;
+`;
+
+const TableTitle = styled.h2`
+  margin-bottom: 20px;
+  text-align: center;
+  color: #333;
+`;
+
+export default RegistrationForm;
