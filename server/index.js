@@ -13,34 +13,17 @@ app.use(express.json());
 mongoose.connect("mongodb+srv://nch0123ca:6vRwCS5T9ZpLR2ab@coachnpayroll.1zfwp8k.mongodb.net/users");
 
 
-
+// server.js or the relevant backend file
 
 app.post('/create-checkout-session', async (req, res) => {
-  const { programId, discountCode } = req.body;
+  const { lineItems } = req.body;
 
   try {
-    const program = await ProgramModel.findById(programId);
-
-    if (!program) {
-      return res.status(404).json({ error: 'Program not found' });
-    }
-
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      line_items: [{
-        price_data: {
-          currency: 'cad',
-          product_data: {
-            name: program.name,
-            description: `${program.sport} at ${program.place}`,
-          },
-          unit_amount: program.fees * 100,
-        },
-        quantity: 1,
-      }],
-      allow_promotion_codes: true, // Enable usage of promotion codes
-      promotion_code: discountCode, // Pass the discount code
+      line_items: lineItems,
       mode: 'payment',
+      allow_promotion_codes: true, // Enable usage of promotion codes
       success_url: 'http://localhost:5173/success',
       cancel_url: 'http://localhost:5173/cancel',
     });
@@ -51,7 +34,6 @@ app.post('/create-checkout-session', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
 
 
 // User routes

@@ -1,9 +1,10 @@
-/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { loadStripe } from "@stripe/stripe-js";
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
 
 const stripePromise = loadStripe("pk_test_51PNSST2KpyYZmvZEQWr6oqPxWFqTeH6KbyUOQEYblEKHM3U7XhTCYl4GU6YJ2lYJgmIHB2n0od0V28dGPfw0sXSP00BKh7CEYT");
 
@@ -19,10 +20,12 @@ const RegistrationForm = () => {
   const programDate = queryParams.get("programDate");
 
   const [programs, setPrograms] = useState([]);
-  const [filteredPrograms, setFilteredPrograms] = useState([]);
   const [childDOBs, setChildDOBs] = useState(["", "", "", "", ""]);
   const [childSelectedTimes, setChildSelectedTimes] = useState([[], [], [], [], []]);
   const [childSelectedClasses, setChildSelectedClasses] = useState([[], [], [], [], []]);
+  const [selectedProgramFees, setSelectedProgramFees] = useState([null, null, null, null, null]);
+  const [selectedPrograms, setSelectedPrograms] = useState([{ programID, programFees, programName, programPlace, programSport: queryParams.get("sport") }]);
+  const [discountCode, setDiscountCode] = useState("");
 
   useEffect(() => {
     axios.get('http://localhost:3001/programs')
@@ -69,19 +72,65 @@ const RegistrationForm = () => {
     const newChildSelectedClasses = [...childSelectedClasses];
     newChildSelectedClasses[index] = filtered;
     setChildSelectedClasses(newChildSelectedClasses);
+
+    // Clear the selected class and fees when the day changes
+    const newSelectedProgramFees = [...selectedProgramFees];
+    newSelectedProgramFees[index] = null;
+    setSelectedProgramFees(newSelectedProgramFees);
   };
 
-  const handleBuy = async (programId) => {
+  const handleClassChange = (index, event) => {
+    const selectedClassName = event.target.value;
+    const selectedProgram = programs.find(program => program.name === selectedClassName);
+
+    const newSelectedProgramFees = [...selectedProgramFees];
+    newSelectedProgramFees[index] = selectedProgram ? selectedProgram.fees : null;
+    setSelectedProgramFees(newSelectedProgramFees);
+
+    const newSelectedPrograms = [...selectedPrograms];
+    newSelectedPrograms[index] = { programID: selectedProgram._id, programFees: selectedProgram.fees, programName: selectedProgram.name, programPlace: selectedProgram.place, programSport: selectedProgram.sport };
+    setSelectedPrograms(newSelectedPrograms);
+
+    console.log("Selected Programs:", newSelectedPrograms);
+  };
+
+  const handleDiscountCodeChange = (event) => {
+    setDiscountCode(event.target.value);
+  };
+
+  const handleBuy = async () => {
     const stripe = await stripePromise;
-    const response = await axios.post('http://localhost:3001/create-checkout-session', { programId });
-    const sessionId = response.data.id;
 
-    const { error } = await stripe.redirectToCheckout({
-      sessionId,
-    });
+    const lineItems = selectedPrograms.map((program) => ({
+      price_data: {
+        currency: 'cad',
+        product_data: {
+          name: program.programName,
+          description: `${program.programSport} at ${program.programPlace}`,
+        },
+        unit_amount: program.programFees * 100,
+      },
+      quantity: 1,
+    }));
 
-    if (error) {
-      console.error("Stripe checkout error:", error);
+    console.log("Line Items:", lineItems);
+
+    try {
+      const response = await axios.post('http://localhost:3001/create-checkout-session', { lineItems, discountCode });
+
+      console.log("Stripe Response:", response.data);
+
+      const sessionId = response.data.id;
+
+      const { error } = await stripe.redirectToCheckout({
+        sessionId,
+      });
+
+      if (error) {
+        console.error("Stripe checkout error:", error);
+      }
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
     }
   };
 
@@ -94,6 +143,22 @@ const RegistrationForm = () => {
 
   const handleNumberOfChildrenChange = (event) => {
     setNumberOfChildren(parseInt(event.target.value));
+  };
+
+  // Create a function to render program names on the calendar
+  const renderProgramsOnDate = (date) => {
+    const programsOnDate = programs.filter(program => {
+      const programDate = new Date(program.time).toLocaleDateString();
+      return programDate === date.toLocaleDateString();
+    });
+
+    return (
+      <div>
+        {programsOnDate.map(program => (
+          <div key={program._id} style={{ fontSize: '12px', color: '#000' }}>{program.name}</div>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -193,7 +258,7 @@ const RegistrationForm = () => {
                     ))}
                   </select>
                   <InputLabel>Class:</InputLabel>
-                  <select name="childClass" required>
+                  <select name="childClass" required onChange={(e) => handleClassChange(1, e)}>
                     <option value="">Select a class</option>
                     {childSelectedClasses[1].map(program => (
                       <option key={program._id} value={program.name}>
@@ -201,6 +266,9 @@ const RegistrationForm = () => {
                       </option>
                     ))}
                   </select>
+                  {selectedProgramFees[1] !== null && (
+                    <p>Fees: ${selectedProgramFees[1]}</p>
+                  )}
                 </FormRow>
               </Step>
             </Column>
@@ -224,7 +292,7 @@ const RegistrationForm = () => {
                     ))}
                   </select>
                   <InputLabel>Class:</InputLabel>
-                  <select name="childClass" required>
+                  <select name="childClass" required onChange={(e) => handleClassChange(2, e)}>
                     <option value="">Select a class</option>
                     {childSelectedClasses[2].map(program => (
                       <option key={program._id} value={program.name}>
@@ -232,6 +300,9 @@ const RegistrationForm = () => {
                       </option>
                     ))}
                   </select>
+                  {selectedProgramFees[2] !== null && (
+                    <p>Fees: ${selectedProgramFees[2]}</p>
+                  )}
                 </FormRow>
               </Step>
             </Column>
@@ -255,7 +326,7 @@ const RegistrationForm = () => {
                     ))}
                   </select>
                   <InputLabel>Class:</InputLabel>
-                  <select name="childClass" required>
+                  <select name="childClass" required onChange={(e) => handleClassChange(3, e)}>
                     <option value="">Select a class</option>
                     {childSelectedClasses[3].map(program => (
                       <option key={program._id} value={program.name}>
@@ -263,6 +334,9 @@ const RegistrationForm = () => {
                       </option>
                     ))}
                   </select>
+                  {selectedProgramFees[3] !== null && (
+                    <p>Fees: ${selectedProgramFees[3]}</p>
+                  )}
                 </FormRow>
               </Step>
             </Column>
@@ -286,7 +360,7 @@ const RegistrationForm = () => {
                     ))}
                   </select>
                   <InputLabel>Class:</InputLabel>
-                  <select name="childClass" required>
+                  <select name="childClass" required onChange={(e) => handleClassChange(4, e)}>
                     <option value="">Select a class</option>
                     {childSelectedClasses[4].map(program => (
                       <option key={program._id} value={program.name}>
@@ -294,115 +368,131 @@ const RegistrationForm = () => {
                       </option>
                     ))}
                   </select>
+                  {selectedProgramFees[4] !== null && (
+                    <p>Fees: ${selectedProgramFees[4]}</p>
+                  )}
                 </FormRow>
               </Step>
             </Column>
           )}
         </FormSection>
-        <NextButton onClick={() => handleBuy(programID)}>Next</NextButton>
+        <FormRow>
+          <InputLabel>Discount Code:</InputLabel>
+          <input type="text" value={discountCode} onChange={handleDiscountCodeChange} />
+        </FormRow>
+        <ButtonRow>
+          <ConfirmButton onClick={handleBuy}>Confirm & Pay</ConfirmButton>
+        </ButtonRow>
+
+        <CalendarContainer>
+          <TableTitle>Available Programs</TableTitle>
+          <Calendar
+            tileContent={({ date, view }) => view === 'month' && renderProgramsOnDate(date)}
+          />
+        </CalendarContainer>
       </Container>
     </>
   );
 };
 
-export default RegistrationForm;
-
 const Header = styled.div`
-  text-align: left;
-  background-color: #f5f5ef;
-  padding: 2rem;
-  padding-top: 5rem;
+  background-color: #f5f5f5;
+  padding: 20px;
+  text-align: center;
 `;
 
 const Title = styled.h1`
-  color: #2E82BE;
-  font-size: 2rem;
-  font-family: "Secular One", sans-serif;
-  letter-spacing: 2px;
-  margin-bottom: 1rem;
+  margin: 0;
+  color: #333;
 `;
 
 const Description = styled.p`
-  color: #2E82BE;
-  margin-bottom: 1rem;
-  span {
-    font-weight: bold;
-  }
+  margin: 10px 0;
+  color: #666;
 `;
 
 const BackButton = styled.a`
-  padding: 0.5rem 1rem;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  text-decoration: underline;
-  color: black;
+  display: inline-block;
+  margin-top: 10px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
 
   &:hover {
-    color: #2E82BE;
+    background-color: #0056b3;
   }
 `;
 
 const Container = styled.div`
-  background-color: #f5f5ef;
-  max-height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding-left: 2rem;
-  @media (max-width: 767px) {
-    padding-left: 1rem;
-  }
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
 `;
 
 const FormSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  gap: 2rem;
+  margin-bottom: 20px;
 `;
 
 const Column = styled.div`
-  display: flex;
-  width: 100%;
-  flex-grow: 1;
+  margin-bottom: 20px;
 `;
 
 const Step = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 2rem;
-  flex-grow: 1;
+  margin-bottom: 20px;
 `;
 
 const StepTitle = styled.h2`
-  color: #2E82BE;
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 10px;
+  color: #333;
 `;
 
 const FormRow = styled.div`
   display: flex;
-  margin-bottom: 1rem;
-  width: 100%;
-  flex-grow: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 10px;
+
+  & > * {
+    margin-right: 10px;
+  }
 `;
 
 const InputLabel = styled.label`
-  margin-bottom: 0.5rem;
-  flex: 0 0 10%;
+  flex: 1 1 150px;
+  margin-bottom: 5px;
+  color: #666;
 `;
 
-const NextButton = styled.button`
-  padding: 0.5rem 1rem;
+const ButtonRow = styled.div`
+  text-align: center;
+`;
+
+const ConfirmButton = styled.button`
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
   border: none;
+  border-radius: 5px;
   cursor: pointer;
-  font-size: 1rem;
-  text-decoration: underline;
-  color: black;
-  text-align: left;
 
   &:hover {
-    color: #144f07;
+    background-color: #218838;
   }
 `;
+
+const CalendarContainer = styled.div`
+  margin-top: 40px;
+`;
+
+const TableTitle = styled.h2`
+  margin-bottom: 20px;
+  text-align: center;
+  color: #333;
+`;
+
+export default RegistrationForm;
