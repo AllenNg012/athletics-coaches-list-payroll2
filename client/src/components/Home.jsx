@@ -5,7 +5,6 @@ import About from "./About/About"
 import About2 from "./About/About2"
 import FAQ from "./FAQ/FAQ"
 import Main from "./Main/Main";
-import Program from "./Program/Program";
 import Programs from "./Program/Programs";
 import bgi from "./background.png";
 
@@ -18,7 +17,6 @@ const Home = () => {
       <br/>
       <Main />
       <Programs />
-      <Program />
       <About />
       <About2 />         
       <Review />

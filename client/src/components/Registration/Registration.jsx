@@ -95,13 +95,20 @@ const RegistrationForm = () => {
     console.log("Selected Programs:", newSelectedPrograms);
   };
 
-  const handleDiscountCodeChange = (event) => {
-    setDiscountCode(event.target.value);
-  };
 
   const handleBuy = async () => {
     const stripe = await stripePromise;
-
+  
+    let totalAmount = selectedPrograms.reduce((total, program) => total + program.programFees, 0);
+    let discount = 0;
+  
+    if (selectedPrograms.length >= 2) {
+      discount = totalAmount * 0.10; // 10% discount
+    }
+  
+    const discountedTotal = totalAmount - discount;
+    const discountRate = discountedTotal / totalAmount;
+  
     const lineItems = selectedPrograms.map((program) => ({
       price_data: {
         currency: 'cad',
@@ -109,24 +116,24 @@ const RegistrationForm = () => {
           name: program.programName,
           description: `${program.programSport} at ${program.programPlace}`,
         },
-        unit_amount: program.programFees * 100,
+        unit_amount: Math.round(program.programFees * discountRate * 100),
       },
       quantity: 1,
     }));
-
+  
     console.log("Line Items:", lineItems);
-
+  
     try {
       const response = await axios.post('http://localhost:3001/create-checkout-session', { lineItems, discountCode });
-
+  
       console.log("Stripe Response:", response.data);
-
+  
       const sessionId = response.data.id;
-
+  
       const { error } = await stripe.redirectToCheckout({
         sessionId,
       });
-
+  
       if (error) {
         console.error("Stripe checkout error:", error);
       }
@@ -377,10 +384,7 @@ const RegistrationForm = () => {
             </Column>
           )}
         </FormSection>
-        <FormRow>
-          <InputLabel>Discount Code:</InputLabel>
-          <input type="text" value={discountCode} onChange={handleDiscountCodeChange} />
-        </FormRow>
+
         <ButtonRow>
           <ConfirmButton onClick={handleBuy}>Confirm & Pay</ConfirmButton>
         </ButtonRow>
