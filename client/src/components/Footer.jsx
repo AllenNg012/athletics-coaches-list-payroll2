@@ -77,11 +77,8 @@ const Footer = () => {
 export default Footer;
 
 const Container = styled.div`
-  background-image: url(${bgi});
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-color: #2E82BE;
+  background-color: rgba(46, 130, 190, 0.8); /* Apply 80% opacity here */
+  
   margin-top: 2rem;
   position: relative;
   padding: 2rem 0;
@@ -102,7 +99,7 @@ const Container = styled.div`
 
 const Profile = styled.div`
   flex: 1;
-  background-color: #f5f5ef;
+  background-color: #f5f5ef; /* No opacity here */
   border: 2px solid black;
   border-radius: 1vw;
   padding: 0.5rem;  // Reduced padding
@@ -112,7 +109,6 @@ const Profile = styled.div`
   .portfolio {}
   h1{
     color: #2E82BE;;
-
   }
   p {
     color: #000000;

@@ -1,171 +1,90 @@
-/* eslint-disable no-unused-vars */
-import React from "react";
-import styled from "styled-components";
-import { Slide } from "react-awesome-reveal";
-import bgi from "../background.png";
+import styled from 'styled-components';
+import p13 from './13.png';
+import signup from './signup.png';
 
+const Container = styled.div`
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+`;
 
+const TopSection = styled.div`
+  flex: 6;
+  background-color: blue;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 20px;
+`;
+
+const BottomSection = styled.div`
+  flex: 4;
+  background-color: white; /* Change this to any color you prefer */
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+`;
+
+const TextContainer = styled.div`
+  text-align: left;
+  color: white;
+`;
+
+const Title = styled.div`
+  font-size: 20px;
+`;
+
+const Subtitle = styled.div`
+  font-size: 57px;
+`;
+
+const Image = styled.img`
+  height: 100px;
+  width: auto;
+`;
+const Image1 = styled.img`
+  height: 200px;
+  width: auto;
+`;
+
+const ParagraphContainer = styled.div`
+  max-width: 600px;
+  text-align: left;
+`;
+
+const ParagraphTitle = styled.h2`
+  font-size: 24px;
+  margin-bottom: 10px;
+`;
+
+const ParagraphText = styled.p`
+  font-size: 16px;
+`;
 
 const Main = () => {
   return (
-    <BGC>
-      <TopContainer>
-      <h1>Main page</h1>
-      </TopContainer>
-    <Container id="home">
-      
+    <Container>
+      <TopSection>
+        <TextContainer>
+          <Title>Ready to Win, Ready to Play.</Title>
+          <Subtitle>JUNIOR ATHLETICS</Subtitle>
+        </TextContainer>
+      </TopSection>
+      <BottomSection>
+        <Image1 src={p13} alt="p13" />
+        <ParagraphContainer>
+          <ParagraphTitle>Welcome to Junior Athletics!</ParagraphTitle>
+          <ParagraphText>
+            At Junior Athletics, we unlock every childs potential through sports. Our mission is to create a fun, safe, and supportive environment where young athletes can thrive, build confidence, and form lasting friendships. We emphasize teamwork, sportsmanship, and personal growth, offering Basketball, Soccer, and Baseball programs in the GTA. Join us and watch your child shine!
+          </ParagraphText>
+        </ParagraphContainer>
+        <Image src={signup} alt="signup" />
+      </BottomSection>
     </Container>
-    </BGC>
   );
 };
 
 export default Main;
-
-const TopContainer = styled.div`
-width:85%;
-margin: auto;
-`
-
-const BGC = styled.div`
-  background-image: url(${bgi});
-  background-position: center;
-  background-repeat: repeat;
-    background-color: #f5f5ef;
-    padding-top: 1rem;
-  padding-bottom: 10rem;
-  @media (max-width: 640px) {
-    padding-top: 3rem;
-  padding-bottom: 3rem;  }
-  h1 {
-    color: #2E82BE;
-    font-size: 3rem;
-    text-transform: capitalize;
-    letter-spacing: 2px;
-    @media (max-width: 640px) {
-      font-size: 2rem;
-  }}
-  @media (max-width: 790px) {
-    width: 20rem;
-  }
-  @media (max-width: 660px) {
-    width: 18rem;
-  }
-  @media (max-width: 640px) {
-    width: 100%;
-  }
-`
-
-const Container = styled.div`
-  display: flex;
-  justify-content: center;
-
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  @media (max-width: 840px) {
-    width: 90%;
-  }
-
-  
-`;
-
-const Content = styled.div`
-  display: flex;
-  width: 100%;
-  gap: 2rem;
-  justify-content: space-between;
-  @media (max-width: 640px) {
-    flex-direction: column;
-    gap: 1rem;
-  }
-`;
-
-const Texts = styled.div`
-  flex: 2;
-  color: #88954c;
-  h4 {
-    padding: 1rem 0;
-    font-weight: 500;
-  }
-  h1 {
-    color: #12721f;
-    font-size: 2rem;
-    font-family: "Secular One", sans-serif;
-    letter-spacing: 2px;
-  }
-  h3 {
-    font-weight: 500;
-    font-size: 1.2rem;
-    padding-bottom: 1.2rem;
-    text-transform: capitalize;
-  }
-  p {
-    font-weight: 300;
-  }
-  span{  font-weight: bold;
-}
-`;
-
-const Social = styled.div`
-  margin-top: 3rem;
-  display: flex;
-  align-items: center;
-  p {
-    font-size: 0.9rem;
-    @media (max-width: 690px) {
-      font-size: 0.8rem;
-    }
-  }
-  .social-icons {
-    display: inline-flex;
-    align-items: center;
-    margin-left: 0.5rem; /* Add some spacing between the text and icons */
-    span {
-      width: 2rem;
-      height: 1rem;
-      position: relative;
-      margin-left: 0.5rem; /* Add spacing between icons */
-      @media (max-width: 690px) {     
-        height: 1.5rem; 
-        margin-left: 0.5rem;
-        padding: 1rem;
-      }
-    }
-    a {
-      color: #1b590b;
-      position: absolute;
-      top: 55%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-    @media (max-width: 690px) {     
-         font-size: 1.5rem; /* Increase icon size for smaller screens */
-  }
-  }
-`;
-
-const Profile = styled.div`
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  
-  @media (max-width: 790px) {
-    width: 20rem;
-  }
-  @media (max-width: 660px) {
-    width: 18rem;
-  }
-  @media (max-width: 640px) {
-    width: 100%;
-  }
-  .contact1 {
-    width: 100%;
-    padding-top: 3vw;
-    height: 9cm;
-    max-width: 100%;
-    @media (max-width: 640px) {
-      height: auto;
-  }
-  }
-`;

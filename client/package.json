@@ -19,6 +19,7 @@
     "@stripe/stripe-js": "^1.54.2",
     "axios": "^1.7.2",
     "bootstrap": "^5.3.3",
+    "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-awesome-reveal": "^4.2.11",
     "react-bootstrap": "^2.10.2",

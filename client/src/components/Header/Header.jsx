@@ -12,12 +12,14 @@ const Header = () => {
     return (
         <Container bar={bar}>
             <Nav bar={bar} onClick={handleBackgroundClick}>
-                <span><a href="#About">About Us</a></span>        
-                <span><a href="#FAQ">FAQ</a></span>
-                <span><a href="#Program">Programs</a></span>
+                <span><a href="#About">About Us</a></span> <span className='disinHeader'> |   </span>     
+                <span><a href="#FAQ">FAQ</a></span><span className='disinHeader'> | </span>
+                <span><a href="#Program">Programs</a></span><span className='disinHeader'> |</span>
+                {/* <Programs />
                 <span><a href="#Location">Locations</a></span>    
-                <span><a href="#footer">Contact Me</a></span>
-                <span><a href="/Login">Login</a></span>
+                <span><a href="/Login">Login</a></span>*/}
+                 <span><a href="#footer">Contact</a></span>
+
             </Nav>
             <Bars onClick={() => setBar(!bar)} bar={bar}>
                 <div className="bar"></div>
@@ -36,6 +38,7 @@ const Container = styled.div`
     z-index: 1000;
     background-color: #2E82BE;
     padding: 1.5rem 1rem;
+    color: white;
     display: flex;
     animation: header 500ms ease-in-out;
     border-bottom-style: solid;
@@ -87,7 +90,7 @@ const Bars = styled.div`
 
 const Nav = styled.div`
     display: flex;
-    gap: 2rem;
+    gap: 1rem;
     margin: auto;
 
     @media(max-width: 640px){
@@ -107,6 +110,7 @@ const Nav = styled.div`
         overflow: hidden;
         transition: height 400ms ease-in-out;
         opacity: 0.9;
+        .disinHeader{display: none;}
     }
 
     span{

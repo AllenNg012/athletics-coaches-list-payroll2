@@ -22,8 +22,8 @@ const ProfComponent = () => {
           <Slide direction="right">
             <ProfileContainer>
               <Texts>
-                <h1 className="green">
-                See what other parents have to say: 
+                <h1 className="ab2Tittle">
+                See what other  parents have to say: 
                 </h1>
                 <h3>Top Rated Child Athletics Program Across the GTA</h3>
               </Texts>
@@ -101,6 +101,8 @@ const Texts = styled.div`
   color: #000000;
   margin-left:5rem;
   margin-right:5rem;
+  .ab2Tittle{    font-size: 2rem;
+  }
 
   h4 {
     padding: 1rem 0;

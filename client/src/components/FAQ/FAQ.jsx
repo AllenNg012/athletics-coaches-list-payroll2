@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+import React from "react";
 import styled from "styled-components";
 
 const Faq = () => {
@@ -35,7 +37,7 @@ const Faq = () => {
             <p>We offer a full refund if you cancel your registration at least two weeks before the program start date. For cancellations made within two weeks of the start date, we provide a 50% refund. No refunds are available after the program has started.</p>
 
             <h3>How do you handle inclement weather?</h3>
-            <p>In the case of bad weather, we will notify parents via email and our website about any cancellations or rescheduled sessions. Safety is our priority, and we are always on the side of caution.</p>
+            <p>In the case of bad weather, we will notify parents via email and our website about any cancellations or rescheduled sessions. Safety is our priority, and we err on the side of caution.</p>
 
             <h3>Can parents stay and watch the practices and games?</h3>
             <p>Yes, parents are welcome to stay and watch their children during practices and games. We encourage family involvement and support!</p>
@@ -51,7 +53,7 @@ const Faq = () => {
 
             <h3>How can I contact Junior Athletics?</h3>
             <p>You can reach us via email at juniorathletics.support@gmail.com or call us at 1-800-123-4567. Our office hours are Monday to Friday, 9 AM to 5 PM.</p>
-                   </Texts>
+          </Texts>
         </Content>
       </Container>
     </BGC>
@@ -61,8 +63,8 @@ const Faq = () => {
 export default Faq;
 
 const BGC = styled.div`
-  background-color: #f5f5ef;
-  padding-top: 1rem;
+  background-color: rgba(255, 255, 255, 0.756); /* Background with opacity */
+  padding-top: 10rem;
   padding-bottom: 10rem;
   min-height: 100vh; /* Ensures the background covers the full height of the viewport */
   display: flex; /* Added to center content vertically */
@@ -73,7 +75,7 @@ const BGC = styled.div`
     padding-bottom: 3rem;
   }
   h1 {
-    color: #2E82BE;
+    color: #2e82be;
     font-size: 3rem;
     text-transform: capitalize;
     letter-spacing: 2px;
@@ -106,7 +108,7 @@ const Content = styled.div`
 
 const Texts = styled.div`
   flex: 1;
-  background-color: #f5f5ef;
+  background-color: #f5f5ef; /* No opacity here */
   border: 2px solid black;
   border-radius: 1vw;
   padding: 1rem;

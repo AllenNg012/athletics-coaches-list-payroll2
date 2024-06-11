@@ -31,6 +31,7 @@ providing <span>personalized instruction</span>, fostering a<br/>
         </Slide>
         <Slide direction="right">
           <Profile>
+          <p> Choose <span className="p1">Junior Athletics</span> to help your child shine in life.</p>
             <img src={aboutus2} alt="aboutus2" className="aboutus2" />
           </Profile>
         </Slide>
@@ -97,8 +98,8 @@ const Texts = styled.div`
 const Profile = styled.div`
   flex: 1;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
+  font-size: 1.5vw;
   
   @media (max-width: 790px) {
     width: 20rem;
@@ -109,9 +110,12 @@ const Profile = styled.div`
   @media (max-width: 640px) {
     width: 100%;
   }
+  .p1{
+color: #004AAD;
+font-weight: bold;
+  }
   .aboutus2 {
     width: 100%;
-    padding-top: 5vw;
     height: 13cm;
     max-width: 100%;
     @media (max-width: 640px) {
