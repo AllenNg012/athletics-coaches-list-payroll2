@@ -67,10 +67,46 @@ const SmallImage = styled.img`
   margin-bottom: 10px;
 `;
 
-const LargeImage = styled.img`
+const LargeImageContainer = styled.div`
+  position: relative;
   width: 100%;
   max-width: 100%;
   margin-bottom: 10px;
+  cursor: pointer;
+
+  &:hover .overlay {
+    opacity: 0.7;
+  }
+
+  &:hover .text {
+    display: block;
+  }
+`;
+
+const LargeImage = styled.img`
+  width: 100%;
+`;
+
+const Overlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+`;
+
+const OverlayText = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 24px;
+  text-decoration: underline;
+  display: none;
 `;
 
 const UnorderedList = styled.ul`
@@ -97,6 +133,10 @@ const FinalText = styled.p`
   width: 100%; /* Ensure text width does not exceed large image width */
 `;
 
+const handleImageClick = () => {
+  window.location.href = '/survey';
+};
+
 const OurProgram = () => {
   return (
     <Container>
@@ -107,7 +147,11 @@ const OurProgram = () => {
       <BottomSection>
         <ContentContainer>
           <SmallImage src={Basketball} alt="Basketball" />
-          <LargeImage src={Basketball2} alt="Basketball2" />
+          <LargeImageContainer onClick={handleImageClick}>
+            <LargeImage src={Basketball2} alt="Basketball2" />
+            <Overlay className="overlay" />
+            <OverlayText className="text">Sign up</OverlayText>
+          </LargeImageContainer>
           <UnorderedList>
             <ListItem>Master essential skills: dribbling, shooting, and defense.</ListItem>
             <ListItem>Refine agility and coordination for improved on-court performance.</ListItem>
@@ -117,7 +161,11 @@ const OurProgram = () => {
         </ContentContainer>
         <ContentContainer>
           <SmallImage src={Soccer} alt="Soccer" />
-          <LargeImage src={Soccer2} alt="Soccer2" />
+          <LargeImageContainer onClick={handleImageClick}>
+            <LargeImage src={Soccer2} alt="Soccer2" />
+            <Overlay className="overlay" />
+            <OverlayText className="text">Sign up</OverlayText>
+          </LargeImageContainer>
           <UnorderedList>
             <ListItem>Master dribbling, passing, and shooting.</ListItem>
             <ListItem>Develop techniques for better ball control and accuracy.</ListItem>
@@ -128,7 +176,11 @@ const OurProgram = () => {
         </ContentContainer>
         <ContentContainer>
           <SmallImage src={baseball} alt="Baseball" />
-          <LargeImage src={baseball2} alt="Baseball2" />
+          <LargeImageContainer onClick={handleImageClick}>
+            <LargeImage src={baseball2} alt="Baseball2" />
+            <Overlay className="overlay" />
+            <OverlayText className="text">Sign up</OverlayText>
+          </LargeImageContainer>
           <UnorderedList>
             <ListItem>Master batting, pitching, fielding, and base running.</ListItem>
             <ListItem>Achieve success through hard work and sportsmanship.</ListItem>

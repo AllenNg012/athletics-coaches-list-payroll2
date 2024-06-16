@@ -1,6 +1,8 @@
 import styled from 'styled-components';
 import p13 from './13.png';
 import signup from './signup.png';
+import { Link } from "react-router-dom";
+
 
 const Container = styled.div`
   height: 100vh;
@@ -81,7 +83,7 @@ const Main = () => {
             At Junior Athletics, we unlock every childs potential through sports. Our mission is to create a fun, safe, and supportive environment where young athletes can thrive, build confidence, and form lasting friendships. We emphasize teamwork, sportsmanship, and personal growth, offering Basketball, Soccer, and Baseball programs in the GTA. Join us and watch your child shine!
           </ParagraphText>
         </ParagraphContainer>
-        <Image src={signup} alt="signup" />
+        <Link to={`/survey`}><Image src={signup} alt="signup" /></Link>
       </BottomSection>
     </Container>
   );

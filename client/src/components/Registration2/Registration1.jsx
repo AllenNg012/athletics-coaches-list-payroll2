@@ -6,7 +6,7 @@ import { loadStripe } from "@stripe/stripe-js";
 
 const stripePromise = loadStripe("pk_test_51PNSST2KpyYZmvZEQWr6oqPxWFqTeH6KbyUOQEYblEKHM3U7XhTCYl4GU6YJ2lYJgmIHB2n0od0V28dGPfw0sXSP00BKh7CEYT");
 
-const RegistrationForm2 = () => {
+const RegistrationForm = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
 
@@ -15,21 +15,20 @@ const RegistrationForm2 = () => {
   const sport = queryParams.get("sport");
   const day = queryParams.get("day");
   const programLocation = queryParams.get("location");
-  const numberOfChildren = 2;
+  const addMoreChildren = queryParams.get("addMoreChildren") === "true";
+  const numberOfChildren = addMoreChildren ? 2 : 1; // Adjust as needed
 
   const [programs, setPrograms] = useState([]);
-  const [childDOBs, setChildDOBs] = useState(["", ""]);
-  const [childSelectedTimes, setChildSelectedTimes] = useState([[], []]);
-  const [childSelectedClasses, setChildSelectedClasses] = useState([[], []]);
-  const [selectedProgramFees, setSelectedProgramFees] = useState([null, null]);
+  const [childDOBs, setChildDOBs] = useState(["", "", "", "", ""]);
+  const [childSelectedTimes, setChildSelectedTimes] = useState([[], [], [], [], []]);
+  const [childSelectedClasses, setChildSelectedClasses] = useState([[], [], [], [], []]);
+  const [selectedProgramFees, setSelectedProgramFees] = useState([null, null, null, null, null]);
   const [selectedPrograms, setSelectedPrograms] = useState([]);
-  const [childClasses, setChildClasses] = useState(["", ""]);
-  const [childDays, setChildDays] = useState(["", ""]);
+  const [childClass, setChildClass] = useState("");
+  const [childDay, setChildDay] = useState("");
+  const [secondClass, setSecondClass] = useState("");
+  const [secondDay, setSecondDay] = useState("");
   const [additionalComments, setAdditionalComments] = useState("");
-  const [parentEmail, setParentEmail] = useState("");
-  const [parentName, setParentName] = useState("");
-  const [parentPhone, setParentPhone] = useState("");
-  const [parentAddress, setParentAddress] = useState("");
 
   const [sortKey, setSortKey] = useState(null);
   const [sortOrder, setSortOrder] = useState(1);
@@ -74,6 +73,23 @@ const RegistrationForm2 = () => {
     setChildSelectedClasses(newChildSelectedClasses);
   };
 
+  const handleTimeChange = (index, event) => {
+    const selectedDay = event.target.value;
+    const filtered = childSelectedTimes[index].filter(program => {
+      const programDate = new Date(program.time).toLocaleDateString();
+      return programDate === selectedDay;
+    });
+
+    const newChildSelectedClasses = [...childSelectedClasses];
+    newChildSelectedClasses[index] = filtered;
+    setChildSelectedClasses(newChildSelectedClasses);
+
+    // Clear the selected class and fees when the day changes
+    const newSelectedProgramFees = [...selectedProgramFees];
+    newSelectedProgramFees[index] = null;
+    setSelectedProgramFees(newSelectedProgramFees);
+  };
+
   const handleClassChange = (index, event) => {
     const selectedClassName = event.target.value;
     const selectedProgram = programs.find(program => program.name === selectedClassName);
@@ -86,54 +102,68 @@ const RegistrationForm2 = () => {
     newSelectedPrograms[index] = { programID: selectedProgram._id, programFees: selectedProgram.fees, programName: selectedProgram.name, programPlace: selectedProgram.place, programSport: selectedProgram.sport };
     setSelectedPrograms(newSelectedPrograms);
 
-    const newChildClasses = [...childClasses];
-    newChildClasses[index] = selectedProgram.name;
-    setChildClasses(newChildClasses);
-
-    const newChildDays = [...childDays];
-    newChildDays[index] = new Date(selectedProgram.time).toLocaleString();
-    setChildDays(newChildDays);
+    console.log("Selected Programs:", newSelectedPrograms);
   };
 
-  const handleButtonClick = (index, program) => {
-    if (selectedPrograms.some(p => p.programID === program._id)) {
-      alert("This program has already been selected. Please choose a different program.");
+  const handleRedButtonClick = (program) => {
+    if (secondClass === program.name) {
+      alert("You cannot select the same program for the 1st program that is already selected as the 2nd program. Please choose a different program.");
       return;
     }
 
-    if (window.confirm(`Do you want to add program for child ${index + 1}?`)) {
-      const newSelectedPrograms = [...selectedPrograms];
-      newSelectedPrograms[index] = { ...program };
-      setSelectedPrograms(newSelectedPrograms);
+    if (window.confirm("Do you want to add 1st program?")) {
+      setChildClass(program.name);
+      setChildDay(new Date(program.time).toLocaleString());
+      if (!selectedPrograms.some(p => p.programID === program._id)) {
+        setSelectedPrograms([{ ...program }]);
+      }
+    }
+  };
 
-      const newChildClasses = [...childClasses];
-      newChildClasses[index] = program.name;
-      setChildClasses(newChildClasses);
+  const handleBlueButtonClick = (program) => {
+    if (!childClass || !childDay) {
+      alert("You should select 1st program first");
+      return;
+    }
 
-      const newChildDays = [...childDays];
-      newChildDays[index] = new Date(program.time).toLocaleString();
-      setChildDays(newChildDays);
+    if (childClass === program.name) {
+      alert("You cannot select the same program for the 2nd program. Please choose a different program.");
+      return;
+    }
+
+    if (window.confirm("Do you want to add 2nd program?")) {
+      setSecondClass(program.name);
+      setSecondDay(new Date(program.time).toLocaleString());
+      if (!selectedPrograms.some(p => p.programID === program._id)) {
+        setSelectedPrograms([...selectedPrograms, { ...program }]);
+      }
+    }
+  };
+
+  const handleRemoveSecondProgram = () => {
+    if (window.confirm("Are you sure you want to remove the 2nd program?")) {
+      setSecondClass("");
+      setSecondDay("");
+      setSelectedPrograms(selectedPrograms.slice(0, 1));
     }
   };
 
   const handleBuy = async () => {
-    if (
-      !parentEmail ||
-      !parentName ||
-      !parentPhone ||
-      !parentAddress ||
-      !childDOBs[0] ||
-      !childClasses[0] ||
-      !childDays[0] ||
-      !childDOBs[1] ||
-      !childClasses[1] ||
-      !childDays[1]
-    ) {
+    const stripe = await stripePromise;
+
+    // Validate all required fields before proceeding
+    if (!document.querySelector('input[name="parentEmail"]').value ||
+        !document.querySelector('input[name="parentName"]').value ||
+        !document.querySelector('input[name="parentPhone"]').value ||
+        !document.querySelector('input[name="parentAddress"]').value ||
+        !document.querySelector('input[name="childName"]').value ||
+        !document.querySelector('input[name="childDOB"]').value ||
+        !document.querySelector('input[name="childClass"]').value ||
+        !document.querySelector('input[name="childDayOfClass"]').value ||
+        (secondClass && (!document.querySelector('input[name="secondClass"]').value || !document.querySelector('input[name="secondDayOfClass"]').value))) {
       alert("Please fill in all required fields.");
       return;
     }
-
-    const stripe = await stripePromise;
 
     let totalAmount = selectedPrograms.reduce((total, program) => total + program.fees, 0);
     let discount = 0;
@@ -220,9 +250,9 @@ const RegistrationForm2 = () => {
   return (
     <>
       <Header>
-        <Title>REGISTRATION FORM({numberOfChildren} Children)</Title>
+        <Title>REGISTRATION FORM({numberOfChildren} {numberOfChildren > 1 ? 'Children' : 'Child'})</Title>
         <Description>
-          <span>You have selected:</span> {gender}, age: {age}, Sport of Choice: {sport}, Location: {programLocation}
+          <span>You have selected:</span> {gender}, age: {age}, Sport of Choice: {sport}, Location: {programLocation}, {addMoreChildren ? "child added" : "no child added"}
         </Description>
         <BackButton href="/survey">Back</BackButton>
       </Header>
@@ -233,15 +263,15 @@ const RegistrationForm2 = () => {
               <StepTitle>STEP 1 - Parent/Guardian Information</StepTitle>
               <FormRow>
                 <InputLabel>Email:</InputLabel>
-                <input type="email" name="parentEmail" value={parentEmail} onChange={(e) => setParentEmail(e.target.value)} required />
+                <input type="email" name="parentEmail" required />
                 <InputLabel>Full Name:</InputLabel>
-                <input type="text" name="parentName" value={parentName} onChange={(e) => setParentName(e.target.value)} required />
+                <input type="text" name="parentName" required />
               </FormRow>
               <FormRow>
                 <InputLabel>Phone Number:</InputLabel>
-                <input type="tel" name="parentPhone" value={parentPhone} onChange={(e) => setParentPhone(e.target.value)} required />
+                <input type="tel" name="parentPhone" required />
                 <InputLabel>Address:</InputLabel>
-                <input type="text" name="parentAddress" value={parentAddress} onChange={(e) => setParentAddress(e.target.value)} required />
+                <input type="text" name="parentAddress" required />
               </FormRow>
             </Step>
           </Column>
@@ -249,30 +279,63 @@ const RegistrationForm2 = () => {
             <Step>
               <StepTitle>STEP 2 - Child Details</StepTitle>
               <FormRow>
-                <InputLabel>Full Name (Child 1):</InputLabel>
-                <input type="text" name="childName1" required />
-                <InputLabel>Date of Birth (Child 1):</InputLabel>
-                <input type="date" name="childDOB1" required onChange={(e) => handleDOBChange(0, e)} />
-                <InputLabel>Class (Child 1):</InputLabel>
-                <input type="text" name="childClass1" value={childClasses[0]} readOnly required />
-                <InputLabel>Day (Child 1):</InputLabel>
-                <input type="text" name="childDayOfClass1" value={childDays[0]} readOnly required />
-              </FormRow>
-              <FormRow>
-                <InputLabel>Full Name (Child 2):</InputLabel>
-                <input type="text" name="childName2" required />
-                <InputLabel>Date of Birth (Child 2):</InputLabel>
-                <input type="date" name="childDOB2" required onChange={(e) => handleDOBChange(1, e)} />
-                <InputLabel>Class (Child 2):</InputLabel>
-                <input type="text" name="childClass2" value={childClasses[1]} readOnly required />
-                <InputLabel>Day (Child 2):</InputLabel>
-                <input type="text" name="childDayOfClass2" value={childDays[1]} readOnly required />
+                <InputLabel>Full Name:</InputLabel>
+                <input type="text" name="childName" required />
+                <InputLabel>Date of Birth:</InputLabel>
+                <input type="date" name="childDOB" required onChange={(e) => handleDOBChange(0, e)} />
+                <InputLabel>Class:</InputLabel>
+                <input type="text" name="childClass" value={childClass} readOnly required />
+                <InputLabel>Day:</InputLabel>
+                <input type="text" name="childDayOfClass" value={childDay} readOnly required />
+                {secondClass && (
+                  <>
+                    <InputLabel>2nd Class:</InputLabel>
+                    <input type="text" name="secondClass" value={secondClass} readOnly required />
+                    <InputLabel>2nd Day:</InputLabel>
+                    <input type="text" name="secondDayOfClass" value={secondDay} readOnly required />
+                    <RemoveButton onClick={handleRemoveSecondProgram}>x</RemoveButton>
+                  </>
+                )}
               </FormRow>
             </Step>
           </Column>
+          {addMoreChildren && Array.from({ length: numberOfChildren - 1 }, (_, index) => (
+            <Column key={index + 1}>
+              <Step>
+                <StepTitle>{index + 2}nd Child Details</StepTitle>
+                <FormRow>
+                  <InputLabel>Full Name:</InputLabel>
+                  <input type="text" name="childName" required />
+                  <InputLabel>Date of Birth:</InputLabel>
+                  <input type="date" name="childDOB" required onChange={(e) => handleDOBChange(index + 1, e)} />
+                  <InputLabel>Class:</InputLabel>
+                  <select name="childClass" required onChange={(e) => handleClassChange(index + 1, e)}>
+                    <option value="">Select a class</option>
+                    {childSelectedClasses[index + 1].map(program => (
+                      <option key={program._id} value={program.name}>
+                        {program.name}
+                      </option>
+                    ))}
+                  </select>
+                  <InputLabel>Day:</InputLabel>
+                  <select name="childDayOfClass" required onChange={(e) => handleTimeChange(index + 1, e)}>
+                    <option value="">Select a day</option>
+                    {childSelectedTimes[index + 1].map(program => (
+                      <option key={program._id} value={new Date(program.time).toLocaleDateString()}>
+                        {new Date(program.time).toLocaleDateString()}
+                      </option>
+                    ))}
+                  </select>
+                  {selectedProgramFees[index + 1] !== null && (
+                    <p>Fees: ${selectedProgramFees[index + 1]}</p>
+                  )}
+                </FormRow>
+              </Step>
+            </Column>
+          ))}
         </FormSection>
         <TableContainer>
-          <SmallText>*Red button to add a program for Child 1, Yellow button for Child 2</SmallText>
+          <SmallText>*Red button to add the 1st class, blue for 2nd class, get 10% off when register 2 programs</SmallText>
           <StyledTable className="table">
             <thead>
               <tr>
@@ -291,8 +354,8 @@ const RegistrationForm2 = () => {
                   <StyledTd width="30%">{`${program.place} (${program.location})`}</StyledTd>
                   <StyledTd width="15%">${program.fees} per week</StyledTd>
                   <StyledTd width="15%">
-                    <RedLink to="#" onClick={() => handleButtonClick(0, program)} className="btn btn-danger">Register</RedLink>
-                    <YellowLink to="#" onClick={() => handleButtonClick(1, program)} className="btn btn-warning">Register</YellowLink>
+                    <RedLink to="#" onClick={() => handleRedButtonClick(program)} className="btn btn-danger">Register</RedLink>
+                    <BlueLink to="#" onClick={() => handleBlueButtonClick(program)} className="btn btn-primary">Register</BlueLink>
                   </StyledTd>
                 </tr>
               ))}
@@ -469,18 +532,31 @@ const RedLink = styled.a`
   }
 `;
 
-const YellowLink = styled.a`
+const BlueLink = styled.a`
   display: inline-block;
   margin: 5px;
   padding: 5px 10px;
-  background-color: yellow;
-  color: black;
+  background-color: blue;
+  color: white;
   text-decoration: none;
   border-radius: 5px;
 
   &:hover {
-    background-color: orange;
+    background-color: darkblue;
   }
 `;
 
-export default RegistrationForm2;
+const RemoveButton = styled.button`
+  background: none;
+  border: none;
+  color: red;
+  font-size: 20px;
+  cursor: pointer;
+  margin-left: 10px;
+
+  &:hover {
+    color: darkred;
+  }
+`;
+
+export default RegistrationForm;
