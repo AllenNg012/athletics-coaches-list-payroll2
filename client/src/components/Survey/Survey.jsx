@@ -10,15 +10,17 @@ const Survey = () => {
   const [sport, setSport] = useState('');
   const [day, setDay] = useState('');
   const [location, setLocation] = useState('');
+  const [isAgeReadOnly, setIsAgeReadOnly] = useState(false);
 
   const navigate = useNavigate();
   const locationData = useLocation();
   const queryParams = new URLSearchParams(locationData.search);
 
   useEffect(() => {
-    const ageFromQuery = queryParams.get('age');
-    if (ageFromQuery) {
-      setAge(ageFromQuery);
+    const initialAge = queryParams.get('initialAge');
+    if (initialAge) {
+      setAge(initialAge);
+      setIsAgeReadOnly(true);
     }
   }, [queryParams]);
 
@@ -72,7 +74,7 @@ const Survey = () => {
 
   return (
     <Container>
-      <Title>Child Information</Title>
+      <Title>Questionnaire</Title>
       <FormSection>
         <FormRow>
           <InputLabel>Gender</InputLabel>
@@ -99,7 +101,7 @@ const Survey = () => {
         </FormRow>
         <FormRow>
           <InputLabel>Age</InputLabel>
-          <select value={age} onChange={handleAgeChange}>
+          <select value={age} onChange={handleAgeChange} disabled={isAgeReadOnly}>
             <option value="">Select</option>
             <option value="3-4">3-4</option>
             <option value="5-6">5-6</option>

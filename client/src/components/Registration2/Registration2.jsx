@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useLocation, Link } from "react-router-dom";
@@ -273,31 +274,35 @@ const RegistrationForm2 = () => {
         </FormSection>
         <TableContainer>
           <SmallText>*Red button to add a program for Child 1, Yellow button for Child 2</SmallText>
-          <StyledTable className="table">
-            <thead>
-              <tr>
-                <StyledTh width="20%" onClick={() => handleSort("name")}>Name {sortKey === "name" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
-                <StyledTh width="15%" onClick={() => handleSort("time")}>Time {sortKey === "time" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
-                <StyledTh width="30%" onClick={() => handleSort("place")}>Place {sortKey === "place" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
-                <StyledTh width="15%" onClick={() => handleSort("fees")}>Program Fees {sortKey === "fees" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
-                <StyledTh width="15%">Register</StyledTh>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredPrograms && filteredPrograms.map((program, index) => (
-                <tr key={index}>
-                  <StyledTd width="20%">{program.name}</StyledTd>
-                  <StyledTd width="15%">{new Date(program.time).toLocaleString()}</StyledTd>
-                  <StyledTd width="30%">{`${program.place} (${program.location})`}</StyledTd>
-                  <StyledTd width="15%">${program.fees} per week</StyledTd>
-                  <StyledTd width="15%">
-                    <RedLink to="#" onClick={() => handleButtonClick(0, program)} className="btn btn-danger">Register</RedLink>
-                    <YellowLink to="#" onClick={() => handleButtonClick(1, program)} className="btn btn-warning">Register</YellowLink>
-                  </StyledTd>
+          {filteredPrograms.length > 0 ? (
+            <StyledTable className="table">
+              <thead>
+                <tr>
+                  <StyledTh width="20%" onClick={() => handleSort("name")}>Name {sortKey === "name" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
+                  <StyledTh width="15%" onClick={() => handleSort("time")}>Time {sortKey === "time" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
+                  <StyledTh width="30%" onClick={() => handleSort("place")}>Place {sortKey === "place" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
+                  <StyledTh width="15%" onClick={() => handleSort("fees")}>Program Fees {sortKey === "fees" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
+                  <StyledTh width="15%">Register</StyledTh>
                 </tr>
-              ))}
-            </tbody>
-          </StyledTable>
+              </thead>
+              <tbody>
+                {filteredPrograms.map((program, index) => (
+                  <tr key={index}>
+                    <StyledTd width="20%">{program.name}</StyledTd>
+                    <StyledTd width="15%">{new Date(program.time).toLocaleString()}</StyledTd>
+                    <StyledTd width="30%">{`${program.place} (${program.location})`}</StyledTd>
+                    <StyledTd width="15%">${program.fees} per week</StyledTd>
+                    <StyledTd width="15%">
+                      <RedLink to="#" onClick={() => handleButtonClick(0, program)} className="btn btn-danger">Register</RedLink>
+                      <YellowLink to="#" onClick={() => handleButtonClick(1, program)} className="btn btn-warning">Register</YellowLink>
+                    </StyledTd>
+                  </tr>
+                ))}
+              </tbody>
+            </StyledTable>
+          ) : (
+            <NoProgramsMessage>No programs are available for the selected criteria.</NoProgramsMessage>
+          )}
         </TableContainer>
         <FormSection>
           <Column>
@@ -436,6 +441,12 @@ const SmallText = styled.p`
   color: #666;
   text-align: center;
   margin-bottom: 10px;
+`;
+
+const NoProgramsMessage = styled.p`
+  text-align: center;
+  color: red;
+  font-weight: bold;
 `;
 
 const StyledTable = styled.table`
