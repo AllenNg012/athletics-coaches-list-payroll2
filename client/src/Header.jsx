@@ -18,6 +18,7 @@ const Header = () => {
                 <span><a href="/Coach">Coach</a></span>
                 <span><a href="/Payroll">Payroll</a></span>
                 <span><a href="/">Sign out</a></span>
+                {/* <span><a href="http://localhost:3000/api/auth/signin?callbackUrl=/">Login</a></span> */}
             </Nav>
             <Bars onClick={() => setBar(!bar)} bar={bar}>
                 <div className="bar"></div>

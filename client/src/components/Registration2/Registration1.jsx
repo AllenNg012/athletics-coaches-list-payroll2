@@ -148,7 +148,8 @@ const RegistrationForm = () => {
     }
   };
 
-  const handleBuy = async () => {
+  const handleBuy = async (e) => {
+    e.preventDefault();
     const stripe = await stripePromise;
 
     // Validate all required fields before proceeding
@@ -186,6 +187,40 @@ const RegistrationForm = () => {
       },
       quantity: 1,
     }));
+
+    // TODO: Add parentAddress to backend
+    // console.log("e.target.parentAddress:", e.target.parentAddress.value);
+    // TODO: bookingID, end, makeupClasses and ** amount and program is different if second program is applied **
+    const newRegistration = {
+      bookingID: 1,
+      parentName: e.target.parentName.value,
+      childName: e.target.childName.value,
+      childBirth: e.target.childDOB.value,
+      email: e.target.parentEmail.value,
+      phone: e.target.parentPhone.value,
+      program: e.target.childClass.value,
+      amount: lineItems[0].price_data.unit_amount / 100,
+      start: e.target.childDayOfClass.value,
+      end: "2029-12-31",
+      secondProgram: e.target.secondClass ? e.target.secondClass.value : "",
+      secondAmount: lineItems.length > 1 ? lineItems[1].price_data.unit_amount / 100 : 0,
+      secondStart: e.target.secondDayOfClass ? e.target.secondDayOfClass.value : "",
+      makeupClasses: "None",
+      notes: e.target.additionalComments.value,
+    };
+    console.log("newRegistration:", newRegistration);
+    // Create a new registration to backend registration form
+    // TODO: save the following url in environment variable
+    const url = 'http://localhost:8000';
+    try {
+      const response = await axios.post(`${url}/api/createRegistration`, newRegistration);
+      console.log('Response.data(new registration):', response.data);
+    } catch (error) {
+        console.error('Error creating Registration:', error);
+        throw error;
+    }
+    
+    return;
 
     try {
       const response = await axios.post('http://localhost:3001/create-checkout-session', { lineItems });
@@ -256,7 +291,7 @@ const RegistrationForm = () => {
         </Description>
         <BackButton href="/survey">Back</BackButton>
       </Header>
-      <Container>
+      <Container onSubmit={handleBuy}>
         <FormSection>
           <Column>
             <Step>
@@ -380,7 +415,8 @@ const RegistrationForm = () => {
           </Column>
         </FormSection>
         <ButtonRow>
-          <ConfirmButton onClick={handleBuy}>Confirm & Pay</ConfirmButton>
+          {/* <ConfirmButton type="submit" onClick={handleBuy}>Confirm & Pay</ConfirmButton> */}
+          <ConfirmButton type="submit">Confirm & Pay</ConfirmButton>
         </ButtonRow>
       </Container>
     </>
@@ -417,7 +453,7 @@ const BackButton = styled.a`
   }
 `;
 
-const Container = styled.div`
+const Container = styled.form`
   max-width: 850px;
   margin: 20px auto;
   padding: 20px;
