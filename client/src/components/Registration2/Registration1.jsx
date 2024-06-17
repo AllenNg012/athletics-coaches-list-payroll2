@@ -208,19 +208,24 @@ const RegistrationForm = () => {
       makeupClasses: "None",
       notes: e.target.additionalComments.value,
     };
-    console.log("newRegistration:", newRegistration);
+
     // Create a new registration to backend registration form
     // TODO: save the following url in environment variable
+    // TODO: Add feature to handle amount when successful registration and unsuccessful registration (determine by stripe payment status)
     const url = 'http://localhost:8000';
     try {
       const response = await axios.post(`${url}/api/createRegistration`, newRegistration);
-      console.log('Response.data(new registration):', response.data);
     } catch (error) {
-        console.error('Error creating Registration:', error);
-        throw error;
+      if (error.response && error.response.status === 400) {
+        // Handle 400 error (Capacity reached)
+        console.error('Error creating Registration:', error.response.data.message);
+        alert(`Registration Error: ${error.response.data.message}`);
+      } else {
+        // Handle other errors
+        console.error('Error creating Registration:', error.message);
+        alert('An error occurred while creating the registration. Please try again.');
+      }
     }
-    
-    return;
 
     try {
       const response = await axios.post('http://localhost:3001/create-checkout-session', { lineItems });
