@@ -58,7 +58,7 @@ const Popup = ({ onClose }) => {
   const navigate = useNavigate();
 
   const handleOptionClick = (age) => {
-    navigate(`/survey?age=${age}`);
+    navigate(`/survey?initialAge=${age}`);
     onClose();
   };
 
@@ -69,10 +69,10 @@ const Popup = ({ onClose }) => {
         <h2>Welcome to Junior Athletics!</h2>
         <p>Get started by selecting your child’s age range below</p>
         <ButtonContainer>
-          <Button onClick={() => handleOptionClick('3-4')}>3-4</Button>
-          <Button onClick={() => handleOptionClick('5-6')}>5-6</Button>
-          <Button onClick={() => handleOptionClick('7-8')}>7-8</Button>
-          <Button onClick={() => handleOptionClick('9-10')}>9-10</Button>
+          <Button onClick={() => handleOptionClick('3-4')}>3-4 YEARS OLD</Button>
+          <Button onClick={() => handleOptionClick('5-6')}>5-6 YEARS OLD</Button>
+          <Button onClick={() => handleOptionClick('7-8')}>7-8 YEARS OLD</Button>
+          <Button onClick={() => handleOptionClick('9-10')}>9-10 YEARS OLD</Button>
         </ButtonContainer>
       </PopupContent>
     </PopupContainer>

@@ -152,15 +152,17 @@ const RegistrationForm = () => {
     const stripe = await stripePromise;
 
     // Validate all required fields before proceeding
-    if (!document.querySelector('input[name="parentEmail"]').value ||
-        !document.querySelector('input[name="parentName"]').value ||
-        !document.querySelector('input[name="parentPhone"]').value ||
-        !document.querySelector('input[name="parentAddress"]').value ||
-        !document.querySelector('input[name="childName"]').value ||
-        !document.querySelector('input[name="childDOB"]').value ||
-        !document.querySelector('input[name="childClass"]').value ||
-        !document.querySelector('input[name="childDayOfClass"]').value ||
-        (secondClass && (!document.querySelector('input[name="secondClass"]').value || !document.querySelector('input[name="secondDayOfClass"]').value))) {
+    const parentEmail = document.querySelector('input[name="parentEmail"]').value;
+    const parentName = document.querySelector('input[name="parentName"]').value;
+    const parentPhone = document.querySelector('input[name="parentPhone"]').value;
+    const parentAddress = document.querySelector('input[name="parentAddress"]').value;
+    const childName = document.querySelector('input[name="childName"]').value;
+    const childDOB = document.querySelector('input[name="childDOB"]').value;
+    const childClassInput = document.querySelector('input[name="childClass"]').value;
+    const childDayOfClass = document.querySelector('input[name="childDayOfClass"]').value;
+
+    if (!parentEmail || !parentName || !parentPhone || !parentAddress || !childName || !childDOB || !childClassInput || !childDayOfClass || 
+      (secondClass && (!document.querySelector('input[name="secondClass"]').value || !document.querySelector('input[name="secondDayOfClass"]').value))) {
       alert("Please fill in all required fields.");
       return;
     }
@@ -336,31 +338,35 @@ const RegistrationForm = () => {
         </FormSection>
         <TableContainer>
           <SmallText>*Red button to add the 1st class, blue for 2nd class, get 10% off when register 2 programs</SmallText>
-          <StyledTable className="table">
-            <thead>
-              <tr>
-                <StyledTh width="20%" onClick={() => handleSort("name")}>Name {sortKey === "name" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
-                <StyledTh width="15%" onClick={() => handleSort("time")}>Time {sortKey === "time" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
-                <StyledTh width="30%" onClick={() => handleSort("place")}>Place {sortKey === "place" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
-                <StyledTh width="15%" onClick={() => handleSort("fees")}>Program Fees {sortKey === "fees" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
-                <StyledTh width="15%">Register</StyledTh>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredPrograms && filteredPrograms.map((program, index) => (
-                <tr key={index}>
-                  <StyledTd width="20%">{program.name}</StyledTd>
-                  <StyledTd width="15%">{new Date(program.time).toLocaleString()}</StyledTd>
-                  <StyledTd width="30%">{`${program.place} (${program.location})`}</StyledTd>
-                  <StyledTd width="15%">${program.fees} per week</StyledTd>
-                  <StyledTd width="15%">
-                    <RedLink to="#" onClick={() => handleRedButtonClick(program)} className="btn btn-danger">Register</RedLink>
-                    <BlueLink to="#" onClick={() => handleBlueButtonClick(program)} className="btn btn-primary">Register</BlueLink>
-                  </StyledTd>
+          {filteredPrograms.length === 0 ? (
+            <NoProgramsMessage>No programs are available for the selected criteria.</NoProgramsMessage>
+          ) : (
+            <StyledTable className="table">
+              <thead>
+                <tr>
+                  <StyledTh width="20%" onClick={() => handleSort("name")}>Name {sortKey === "name" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
+                  <StyledTh width="15%" onClick={() => handleSort("time")}>Time {sortKey === "time" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
+                  <StyledTh width="30%" onClick={() => handleSort("place")}>Place {sortKey === "place" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
+                  <StyledTh width="15%" onClick={() => handleSort("fees")}>Program Fees {sortKey === "fees" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
+                  <StyledTh width="15%">Register</StyledTh>
                 </tr>
-              ))}
-            </tbody>
-          </StyledTable>
+              </thead>
+              <tbody>
+                {filteredPrograms.map((program, index) => (
+                  <tr key={index}>
+                    <StyledTd width="20%">{program.name}</StyledTd>
+                    <StyledTd width="15%">{new Date(program.time).toLocaleString()}</StyledTd>
+                    <StyledTd width="30%">{`${program.place} (${program.location})`}</StyledTd>
+                    <StyledTd width="15%">${program.fees} per week</StyledTd>
+                    <StyledTd width="15%">
+                      <RedLink to="#" onClick={() => handleRedButtonClick(program)} className="btn btn-danger">Register</RedLink>
+                      <BlueLink to="#" onClick={() => handleBlueButtonClick(program)} className="btn btn-primary">Register</BlueLink>
+                    </StyledTd>
+                  </tr>
+                ))}
+              </tbody>
+            </StyledTable>
+          )}
         </TableContainer>
         <FormSection>
           <Column>
@@ -499,6 +505,12 @@ const SmallText = styled.p`
   color: #666;
   text-align: center;
   margin-bottom: 10px;
+`;
+
+const NoProgramsMessage = styled.p`
+  text-align: center;
+  color: red;
+  font-weight: bold;
 `;
 
 const StyledTable = styled.table`
