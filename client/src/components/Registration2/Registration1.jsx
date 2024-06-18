@@ -228,6 +228,8 @@ const RegistrationForm = () => {
         console.error('Error creating Registration:', error.message);
         alert('An error occurred while creating the registration. Please try again.');
       }
+      // Stop the process if there is an error
+      return;
     }
 
     try {

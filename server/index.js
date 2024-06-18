@@ -14,7 +14,7 @@ mongoose.connect("mongodb+srv://nch0123ca:6vRwCS5T9ZpLR2ab@coachnpayroll.1zfwp8k
 
 
 // server.js or the relevant backend file
-
+// TODO: create function that will pass success message that will trigger update parents' registration
 app.post('/create-checkout-session', async (req, res) => {
   const { lineItems } = req.body;
 
@@ -28,7 +28,7 @@ app.post('/create-checkout-session', async (req, res) => {
       cancel_url: 'http://localhost:5173/cancel',
     });
 
-    res.json({ id: session.id });
+    res.status(200).json({ id: session.id, success: true, message: " Created Successfully." })
   } catch (error) {
     console.error('Error creating checkout session:', error);
     res.status(500).json({ error: 'Internal server error' });
