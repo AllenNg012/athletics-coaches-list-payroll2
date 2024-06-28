@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { useLocation, Link } from "react-router-dom";
 import axios from "axios";
 import { loadStripe } from "@stripe/stripe-js";
+import arrow from './arrow.png'
 
 const stripePromise = loadStripe("pk_test_51PNSST2KpyYZmvZEQWr6oqPxWFqTeH6KbyUOQEYblEKHM3U7XhTCYl4GU6YJ2lYJgmIHB2n0od0V28dGPfw0sXSP00BKh7CEYT");
 
@@ -39,6 +40,10 @@ const RegistrationForm2 = () => {
   const [locationFilter, setLocationFilter] = useState(programLocation || '');
   const [genderFilter, setGenderFilter] = useState(gender || '');
   const [dayFilter, setDayFilter] = useState(day || '');
+
+  const [selectedForFirstChild, setSelectedForFirstChild] = useState(null);
+  const [selectedForSecondChild, setSelectedForSecondChild] = useState(null);
+  
 
   useEffect(() => {
     axios.get('http://localhost:3001/programs')
@@ -114,6 +119,71 @@ const RegistrationForm2 = () => {
       const newChildDays = [...childDays];
       newChildDays[index] = new Date(program.time).toLocaleString();
       setChildDays(newChildDays);
+    }
+  };
+  const handleNextClick = async () => {
+    if (
+      !parentEmail ||
+      !parentName ||
+      !parentPhone ||
+      !parentAddress ||
+      !childDOBs[0] ||
+      !childClasses[0] ||
+      !childDays[0] ||
+      !childDOBs[1] ||
+      !childClasses[1] ||
+      !childDays[1]
+    ) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+    if (!selectedForFirstChild || !selectedForSecondChild) {
+      alert("Please select programs for both children before proceeding.");
+      return;
+    }
+
+    const selectedPrograms = [
+      programs.find(program => program._id === selectedForFirstChild),
+      programs.find(program => program._id === selectedForSecondChild)
+    ];
+
+    const stripe = await stripePromise;
+
+    let totalAmount = selectedPrograms.reduce((total, program) => total + program.fees, 0);
+    let discount = 0;
+
+    // Apply a 10% discount if more than one program is selected
+    if (selectedPrograms.length >= 2) {
+      discount = totalAmount * 0.10; // 10% discount
+    }
+
+    const discountedTotal = totalAmount - discount;
+    const discountRate = discount > 0 ? discountedTotal / totalAmount : 1;
+
+    const lineItems = selectedPrograms.map(program => ({
+      price_data: {
+        currency: 'cad',
+        product_data: {
+          name: `${program.name} (${program.sport})`,
+          description: `Program at ${program.place}`
+        },
+        unit_amount: Math.round(program.fees * discountRate * 100), // Calculate discounted price
+      },
+      quantity: 1
+    }));
+
+    try {
+      const response = await axios.post('http://localhost:3001/create-checkout-session', {
+        lineItems,
+        customerEmail: parentEmail
+      });
+      const sessionId = response.data.id;
+      const { error } = await stripe.redirectToCheckout({ sessionId });
+      if (error) {
+        console.log(error);
+      }
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
     }
   };
 
@@ -217,6 +287,40 @@ const RegistrationForm2 = () => {
     }
     return 0;
   });
+  const handleSelectionChange = (program, childIndex) => {
+    const exists = selectedPrograms.find(p => p.programID === program._id && p.childIndex === childIndex);
+    if (exists) {
+      setSelectedPrograms(selectedPrograms.filter(p => p.programID !== program._id || p.childIndex !== childIndex));
+    } else {
+      setSelectedPrograms([...selectedPrograms, { ...program, childIndex }]);
+    }
+  };
+
+  
+  const handleRegisterSelections = () => {
+    // Confirm before proceeding with registration
+    if (window.confirm("Do you want to register the selected program(s)?")) {
+      if (selectedForFirstChild) {
+        const selectedProgramForFirst = programs.find(program => program._id === selectedForFirstChild);
+        if (selectedProgramForFirst) {
+          setChildClasses(prevClasses => [selectedProgramForFirst.name, prevClasses[1]]);
+          setChildDays(prevDays => [new Date(selectedProgramForFirst.time).toLocaleString(), prevDays[1]]);
+        }
+      }
+  
+      if (selectedForSecondChild) {
+        const selectedProgramForSecond = programs.find(program => program._id === selectedForSecondChild);
+        if (selectedProgramForSecond) {
+          setChildClasses(prevClasses => [prevClasses[0], selectedProgramForSecond.name]);
+          setChildDays(prevDays => [prevDays[0], new Date(selectedProgramForSecond.time).toLocaleString()]);
+        }
+      }
+    } else {
+      console.log("Registration canceled by user.");
+    }
+  };
+  
+  
 
   return (
     <>
@@ -247,67 +351,97 @@ const RegistrationForm2 = () => {
             </Step>
           </Column>
           <Column>
-            <Step>
-              <StepTitle>STEP 2 - Child Details</StepTitle>
-              <FormRow>
-                <InputLabel>Full Name (Child 1):</InputLabel>
-                <input type="text" name="childName1" required />
-                <InputLabel>Date of Birth (Child 1):</InputLabel>
-                <input type="date" name="childDOB1" required onChange={(e) => handleDOBChange(0, e)} />
-                <InputLabel>Class (Child 1):</InputLabel>
-                <input type="text" name="childClass1" value={childClasses[0]} readOnly required />
-                <InputLabel>Day (Child 1):</InputLabel>
-                <input type="text" name="childDayOfClass1" value={childDays[0]} readOnly required />
-              </FormRow>
-              <FormRow>
-                <InputLabel>Full Name (Child 2):</InputLabel>
-                <input type="text" name="childName2" required />
-                <InputLabel>Date of Birth (Child 2):</InputLabel>
-                <input type="date" name="childDOB2" required onChange={(e) => handleDOBChange(1, e)} />
-                <InputLabel>Class (Child 2):</InputLabel>
-                <input type="text" name="childClass2" value={childClasses[1]} readOnly required />
-                <InputLabel>Day (Child 2):</InputLabel>
-                <input type="text" name="childDayOfClass2" value={childDays[1]} readOnly required />
-              </FormRow>
-            </Step>
-          </Column>
+  <Step>
+    <StepTitle>STEP 2 - Child Details</StepTitle>
+    <FormRow>
+      <InputLabel>Full Name (Child 1):</InputLabel>
+      <input type="text" name="childName1" required />
+      <InputLabel>Date of Birth (Child 1):</InputLabel>
+      <input type="date" name="childDOB1" required onChange={(e) => handleDOBChange(0, e)} />
+      <InputLabel>Class (Child 1):</InputLabel>
+      <input type="text" name="childClass1" value={childClasses[0]} readOnly required />
+      <InputLabel>Day (Child 1):</InputLabel>
+      <input type="text" name="childDayOfClass1" value={childDays[0]} readOnly required />
+    </FormRow>
+    <FormRow>
+      <InputLabel>Full Name (Child 2):</InputLabel>
+      <input type="text" name="childName2" required />
+      <InputLabel>Date of Birth (Child 2):</InputLabel>
+      <input type="date" name="childDOB2" required onChange={(e) => handleDOBChange(1, e)} />
+      <InputLabel>Class (Child 2):</InputLabel>
+      <input type="text" name="childClass2" value={childClasses[1]} readOnly required />
+      <InputLabel>Day (Child 2):</InputLabel>
+      <input type="text" name="childDayOfClass2" value={childDays[1]} readOnly required />
+    </FormRow>
+  </Step>
+</Column>
+
         </FormSection>
         <TableContainer>
           <SmallText>*Red button to add a program for Child 1, Yellow button for Child 2</SmallText>
           {filteredPrograms.length > 0 ? (
-            <StyledTable className="table">
-              <thead>
-                <tr>
-                  <StyledTh width="20%" onClick={() => handleSort("name")}>Name {sortKey === "name" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
-                  <StyledTh width="15%" onClick={() => handleSort("time")}>Time {sortKey === "time" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
-                  <StyledTh width="30%" onClick={() => handleSort("place")}>Place {sortKey === "place" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
-                  <StyledTh width="15%" onClick={() => handleSort("fees")}>Program Fees {sortKey === "fees" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
-                  <StyledTh width="15%">Register</StyledTh>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredPrograms.map((program, index) => (
-                  <tr key={index}>
-                    <StyledTd width="20%">{program.name}</StyledTd>
-                    <StyledTd width="15%">{new Date(program.time).toLocaleString()}</StyledTd>
-                    <StyledTd width="30%">{`${program.place} (${program.location})`}</StyledTd>
-                    <StyledTd width="15%">${program.fees} per week</StyledTd>
-                    <StyledTd width="15%">
-                      <RedLink to="#" onClick={() => handleButtonClick(0, program)} className="btn btn-danger">Register</RedLink>
-                      <YellowLink to="#" onClick={() => handleButtonClick(1, program)} className="btn btn-warning">Register</YellowLink>
-                    </StyledTd>
-                  </tr>
-                ))}
-              </tbody>
-            </StyledTable>
+           <StyledTable className="table">
+           <thead>
+             <tr>
+               <StyledTh>Name</StyledTh>
+               <StyledTh>Time</StyledTh>
+               <StyledTh>Place</StyledTh>
+               <StyledTh>Program Fees</StyledTh>
+               <StyledTh>1st Child Selection</StyledTh>
+               <StyledTh>2nd Child Selection</StyledTh>
+             </tr>
+           </thead>
+           <tbody>
+             {filteredPrograms.map((program, index) => (
+               <tr key={index}>
+                 <StyledTd>{program.name}</StyledTd>
+                 <StyledTd>{new Date(program.time).toLocaleString()}</StyledTd>
+                 <StyledTd>{program.place}</StyledTd>
+                 <StyledTd>${program.fees}</StyledTd>
+                 <StyledTd>
+          <input
+            type="checkbox"
+            checked={selectedForFirstChild === program._id}
+            onChange={() => {
+              if (selectedForFirstChild === program._id) {
+                setSelectedForFirstChild(null);
+              } else {
+                setSelectedForFirstChild(program._id);
+              }
+            }}
+            disabled={selectedForFirstChild !== null && selectedForFirstChild !== program._id}
+          />
+        </StyledTd>
+        <StyledTd>
+          <input
+            type="checkbox"
+            checked={selectedForSecondChild === program._id}
+            onChange={() => {
+              if (selectedForSecondChild === program._id) {
+                setSelectedForSecondChild(null);
+              } else {
+                setSelectedForSecondChild(program._id);
+              }
+            }}
+            disabled={selectedForSecondChild !== null && selectedForSecondChild !== program._id}
+          />
+        </StyledTd>
+               </tr>
+             ))}
+           </tbody>
+         </StyledTable>
+         
+         
           ) : (
             <NoProgramsMessage>No programs are available for the selected criteria.</NoProgramsMessage>
-          )}
+          )}  
+          <RegisterButton onClick={handleRegisterSelections}>Register</RegisterButton>
+
         </TableContainer>
         <FormSection>
           <Column>
             <Step>
-              <StepTitle>Additional Comments/Request</StepTitle>
+              <StepTitle>Does the participant have any medical conditions or allergies we should be aware of:</StepTitle>
               <FormRow>
                 <TextArea
                   name="additionalComments"
@@ -321,17 +455,28 @@ const RegistrationForm2 = () => {
             </Step>
           </Column>
         </FormSection>
-        <ButtonRow>
+
+        {/*           <ButtonRow>
           <ConfirmButton onClick={handleBuy}>Confirm & Pay</ConfirmButton>
         </ButtonRow>
+  */}
+
+<ButtonRow>
+        <ConfirmButton onClick={handleNextClick}>
+          Next
+          <img src={arrow} alt="Next" />
+        </ConfirmButton>
+      </ButtonRow>
       </Container>
     </>
   );
 };
 
 const Header = styled.div`
+
   background-color: #f5f5f5;
   padding: 20px;
+  padding-top: 150px;
   text-align: center;
 `;
 
@@ -349,13 +494,17 @@ const BackButton = styled.a`
   display: inline-block;
   margin-top: 10px;
   padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
+  background-color: #ffffff25;
+  color: black;
   text-decoration: none;
   border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  font-weight: 800;
 
   &:hover {
-    background-color: #0056b3;
+    color: #5e0511;
   }
 `;
 
@@ -417,16 +566,26 @@ const ButtonRow = styled.div`
 
 const ConfirmButton = styled.button`
   padding: 10px 20px;
-  background-color: #28a745;
-  color: white;
+  background-color: #ffffff;
+  color: black;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  text-decoration: underline;
+  margin-bottom: 25px; // Keeps some space below each row
+  font-weight: 800;
 
   &:hover {
-    background-color: #218838;
+    color: #5e0511;
+  }
+
+  img {
+    margin-left: 5px;
+    width: 20px; // Adjust size as necessary
+    height: auto;
   }
 `;
+
 
 const TableContainer = styled.div`
   width: 100%; /* Adjust to fit the container */
@@ -491,6 +650,22 @@ const YellowLink = styled.a`
 
   &:hover {
     background-color: orange;
+  }
+`;
+const RegisterButton = styled.button`
+  display: block;
+  padding: 10px 60px;
+  margin-top: 10px;
+  margin-left: auto;  // Aligns the button to the right
+  margin-right: calc(5%);  // Adjusts based on your column widths to align under 'Selection'
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #45a049;
   }
 `;
 

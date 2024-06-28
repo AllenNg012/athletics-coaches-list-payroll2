@@ -1,6 +1,8 @@
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import welcome from './welcome.png';
+
 
 const PopupContainer = styled.div`
   position: fixed;
@@ -21,6 +23,8 @@ const PopupContent = styled.div`
   border-radius: 10px;
   text-align: center;
   position: relative;
+  h1{font-size:100px;}
+  p{font-size:20px;font-weight:800}
 `;
 
 const ButtonContainer = styled.div`
@@ -30,27 +34,32 @@ const ButtonContainer = styled.div`
 `;
 
 const Button = styled.button`
-  margin: 10px;
+  margin: 15px;
   padding: 10px 20px;
-  background-color: blue;
+  background-color: #95071A;
   color: white;
-  border: none;
-  border-radius: 5px;
+  border: 3px solid black;  // Added a black border
+  border-radius: 25px;
+  width: 180px;
+  height: 60px;
+  font-size: 25px;
+  font-weight: 800;
   cursor: pointer;
-  flex: 1 1 45%; /* Adjusts to 45% of the container width */
+  flex: 1 1 45%;  // Adjusts to 45% of the container width
 
   &:hover {
-    background-color: darkblue;
+    background-color: #700211;
   }
 `;
+
 
 const CloseButton = styled.button`
   position: absolute;
   top: 10px;
-  right: 10px;
+  right: 20px;
   background: none;
   border: none;
-  font-size: 20px;
+  font-size: 30px;
   cursor: pointer;
 `;
 
@@ -66,13 +75,14 @@ const Popup = ({ onClose }) => {
     <PopupContainer>
       <PopupContent>
         <CloseButton onClick={onClose}>&times;</CloseButton>
-        <h2>Welcome to Junior Athletics!</h2>
+        <img src={welcome} alt="Welcome" style={{ maxWidth: '80%', height: 'auto' }} />
+
         <p>Get started by selecting your child’s age range below</p>
         <ButtonContainer>
-          <Button onClick={() => handleOptionClick('3-4')}>3-4 YEARS OLD</Button>
           <Button onClick={() => handleOptionClick('5-6')}>5-6 YEARS OLD</Button>
           <Button onClick={() => handleOptionClick('7-8')}>7-8 YEARS OLD</Button>
           <Button onClick={() => handleOptionClick('9-10')}>9-10 YEARS OLD</Button>
+          <Button onClick={() => handleOptionClick('11-12')}>11-12 YEARS OLD</Button>
         </ButtonContainer>
       </PopupContent>
     </PopupContainer>

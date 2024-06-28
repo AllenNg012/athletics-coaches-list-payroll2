@@ -82,6 +82,9 @@ function CreateProgram() {
               <option value="Basketball">Basketball</option>
               <option value="Soccer">Soccer</option>
               <option value="Baseball">Baseball</option>
+              <option value="Basketball Group Academy Training">Basketball Group Academy Training</option>
+              <option value="House Leagues">House Leagues</option>
+              <option value="Leadership Retreats">Leadership Retreats</option>
             </select>
           </div>
           <div className='mb-2'>

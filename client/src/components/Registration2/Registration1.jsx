@@ -4,6 +4,8 @@ import styled from "styled-components";
 import { useLocation, Link } from "react-router-dom";
 import axios from "axios";
 import { loadStripe } from "@stripe/stripe-js";
+import logo from './logo.jpg';
+import arrow from './arrow.png'
 
 const stripePromise = loadStripe("pk_test_51PNSST2KpyYZmvZEQWr6oqPxWFqTeH6KbyUOQEYblEKHM3U7XhTCYl4GU6YJ2lYJgmIHB2n0od0V28dGPfw0sXSP00BKh7CEYT");
 
@@ -39,6 +41,8 @@ const RegistrationForm = () => {
   const [genderFilter, setGenderFilter] = useState(gender || '');
   const [dayFilter, setDayFilter] = useState(day || '');
 
+
+  
   useEffect(() => {
     axios.get('http://localhost:3001/programs')
       .then(result => setPrograms(result.data || []))
@@ -292,56 +296,213 @@ const RegistrationForm = () => {
     return 0;
   });
 
+  const handleCheckboxChange = (programId) => {
+    setSelectedPrograms(prev => {
+      const currentlySelected = Object.keys(prev).filter(key => prev[key]).length; // Count how many are currently true
+      const isCurrentlySelected = prev[programId];
+  
+      // If trying to select more than allowed and the current one isn't already selected
+      if (currentlySelected >= 2 && !isCurrentlySelected) {
+        alert("You can only select up to 2 programs.");
+        return prev; // Return the current state without changes
+      }
+  
+      // Otherwise, toggle the selected state
+      return {
+        ...prev,
+        [programId]: !isCurrentlySelected
+      };
+    });
+  };
+  
+  const handleRegisterSelected = () => {
+
+    const selectedProgramIds = Object.keys(selectedPrograms).filter(id => selectedPrograms[id]);
+  
+    if (selectedProgramIds.length === 0) {
+      alert("Please select at least one program to register.");
+      return;
+    }
+  
+    // Fetch details of the selected programs
+    const selectedDetails = filteredPrograms.filter(program => selectedProgramIds.includes(program._id));
+  
+    // Confirm before proceeding with any registration
+    if (window.confirm("Do you want to register the selected program(s)?")) {
+      if (selectedDetails.length > 0) {
+        // Set the first selected detail
+        setChildClass(selectedDetails[0].name);
+        setChildDay(new Date(selectedDetails[0].time).toLocaleDateString());
+  
+        // Check if there is a second selection and update accordingly
+        if (selectedDetails.length > 1) {
+          setSecondClass(selectedDetails[1].name);
+          setSecondDay(new Date(selectedDetails[1].time).toLocaleDateString());
+        } else {
+          // Reset the second child details if no second program is selected
+          setSecondClass("");
+          setSecondDay("");
+        }
+        // After registering, reset selected programs to allow new selections
+      }
+    } else {
+      // Log or handle the cancellation case
+      console.log("Registration cancelled by user.");
+      // Optionally, reset selected states here if needed
+    }
+  };
+  const handleNextClick = async () => {
+      // Validate all required fields before proceeding
+  const parentEmail = document.querySelector('input[name="parentEmail"]').value;
+  const parentName = document.querySelector('input[name="parentName"]').value;
+  const parentPhone = document.querySelector('input[name="parentPhone"]').value;
+  const parentAddress = document.querySelector('input[name="parentAddress"]').value;
+  const childName = document.querySelector('input[name="childName"]').value;
+  const childDOB = document.querySelector('input[name="childDOB"]').value;
+  const childClassInput = document.querySelector('input[name="childClass"]').value;
+  const childDayOfClass = document.querySelector('input[name="childDayOfClass"]').value;
+
+  if (!parentEmail || !parentName || !parentPhone || !parentAddress || !childName || !childDOB || !childClassInput || !childDayOfClass || 
+    (secondClass && (!document.querySelector('input[name="secondClass"]').value || !document.querySelector('input[name="secondDayOfClass"]').value))) {
+    alert("Please fill in all required fields.");
+    return;
+  }
+    const selectedProgramIds = Object.keys(selectedPrograms).filter(id => selectedPrograms[id]);
+
+    if (selectedProgramIds.length === 0) {
+      alert("Please select at least one program to proceed to payment.");
+      return;
+    }
+
+    // Retrieve the selected programs details
+    const selectedDetails = programs.filter(program => selectedProgramIds.includes(program._id));
+
+    if (selectedDetails.length > 0) {
+      const stripe = await stripePromise;
+
+      let totalAmount = selectedDetails.reduce((total, program) => total + program.fees, 0);
+      let discount = 0;
+
+      // Apply a discount if more than one program is selected
+      if (selectedDetails.length >= 2) {
+        discount = totalAmount * 0.10; // 10% discount
+      }
+
+      const discountedTotal = totalAmount - discount;
+      const discountRate = discountedTotal / totalAmount;
+
+      const lineItems = selectedDetails.map(program => ({
+        price_data: {
+          currency: 'cad',
+          product_data: {
+            name: program.name,
+            description: `${program.sport} at ${program.place}`,
+          },
+          unit_amount: Math.round(program.fees * discountRate * 100),
+        },
+        quantity: 1,
+      }));
+
+      try {
+        const response = await axios.post('http://localhost:3001/create-checkout-session', { lineItems });
+        const sessionId = response.data.id;
+        const { error } = await stripe.redirectToCheckout({ sessionId });
+        if (error) {
+          console.error("Stripe checkout error:", error);
+        }
+      } catch (error) {
+        console.error("Error creating checkout session:", error);
+      }
+    } else {
+      console.log("No programs selected or an error occurred.");
+    }
+  };
+
   return (
     <>
-      <Header>
-        <Title>REGISTRATION FORM({numberOfChildren} {numberOfChildren > 1 ? 'Children' : 'Child'})</Title>
-        <Description>
-          <span>You have selected:</span> {gender}, age: {age}, Sport of Choice: {sport}, Location: {programLocation}, {addMoreChildren ? "child added" : "no child added"}
-        </Description>
-        <BackButton href="/survey">Back</BackButton>
-      </Header>
+  <BGI> <Header>
+  <div>
+    <Title>REGISTRATION FORM ({numberOfChildren} {numberOfChildren > 1 ? 'Children' : 'Child'})</Title>
+    <Description>
+      You have selected: {gender}, age: {age}, Sport of Choice: {sport}, Location: {programLocation}, {addMoreChildren ? "child added" : "no child added"}
+    </Description>
+  </div>  <BackButton href="/survey">Back</BackButton>
+
+</Header>
+
       <Container onSubmit={handleBuy}>
         <FormSection>
           <Column>
-            <Step>
-              <StepTitle>STEP 1 - Parent/Guardian Information</StepTitle>
-              <FormRow>
-                <InputLabel>Email:</InputLabel>
-                <input type="email" name="parentEmail" required />
-                <InputLabel>Full Name:</InputLabel>
-                <input type="text" name="parentName" required />
-              </FormRow>
-              <FormRow>
-                <InputLabel>Phone Number:</InputLabel>
-                <input type="tel" name="parentPhone" required />
-                <InputLabel>Address:</InputLabel>
-                <input type="text" name="parentAddress" required />
-              </FormRow>
-            </Step>
+          <Step>
+          <StepTitle>STEP 1 - Parent/Guardian Information</StepTitle>
+          <FormRow>
+            <InputField>
+              <InputLabel>Email:</InputLabel>
+              <InputLabel>Full Name:</InputLabel>
+              <InputLabel>Phone Number:</InputLabel>
+              <InputLabel>Address:</InputLabel>
+            </InputField>
+            <InputField>
+            <InputLabel>
+              <input type="email" name="parentEmail" required /></InputLabel>
+            <InputLabel>
+            <input type="text" name="parentName" required /></InputLabel>
+            <InputLabel>
+              <input type="tel" name="parentPhone" required /></InputLabel>
+            <InputLabel>
+            <input type="text" name="parentAddress" required /></InputLabel>
+            </InputField>
+          </FormRow>
+        </Step>
           </Column>
+          <br></br>
+          <br></br>
           <Column>
             <Step>
               <StepTitle>STEP 2 - Child Details</StepTitle>
-              <FormRow>
-                <InputLabel>Full Name:</InputLabel>
-                <input type="text" name="childName" required />
-                <InputLabel>Date of Birth:</InputLabel>
-                <input type="date" name="childDOB" required onChange={(e) => handleDOBChange(0, e)} />
-                <InputLabel>Class:</InputLabel>
-                <input type="text" name="childClass" value={childClass} readOnly required />
-                <InputLabel>Day:</InputLabel>
-                <input type="text" name="childDayOfClass" value={childDay} readOnly required />
-                {secondClass && (
-                  <>
-                    <InputLabel>2nd Class:</InputLabel>
-                    <input type="text" name="secondClass" value={secondClass} readOnly required />
-                    <InputLabel>2nd Day:</InputLabel>
-                    <input type="text" name="secondDayOfClass" value={secondDay} readOnly required />
-                    <RemoveButton onClick={handleRemoveSecondProgram}>x</RemoveButton>
-                  </>
-                )}
-              </FormRow>
+              <Step2FormRow>
+                <div>
+                  <Step2InputLabel>Full Name:</Step2InputLabel>
+                  <Step2InputField>
+                    <input type="text" name="childName" required />
+                  </Step2InputField>
+                </div>
+                <div>
+                  <Step2InputLabel>Date of Birth:</Step2InputLabel>
+                  <Step2InputField>
+                    <input type="date" name="childDOB" required onChange={(e) => handleDOBChange(0, e)} />
+                  </Step2InputField>
+                </div>
+                <div>
+                  <Step2InputLabel>Class:</Step2InputLabel>
+                  <Step2InputField>
+                    <input type="text" name="childClass" value={childClass} readOnly required />
+                  </Step2InputField>
+                </div>
+                <div>
+                  <Step2InputLabel>Start Day:</Step2InputLabel>
+                  <Step2InputField>
+                    <input type="text" name="childDayOfClass" value={childDay} readOnly required />
+                  </Step2InputField>
+                </div>
+              </Step2FormRow>
+              {secondClass && (
+                <SecondClassRow>
+                  <div>
+                    <Step2InputLabel>2nd Class:</Step2InputLabel>
+                    <Step2InputField>
+                      <input type="text" name="secondClass" value={secondClass} readOnly required />
+                    </Step2InputField>
+                  </div>
+                  <div>
+                    <Step2InputLabel>2nd Start Day:</Step2InputLabel>
+                    <Step2InputField>
+                      <input type="text" name="secondDayOfClass" value={secondDay} readOnly required />
+                    </Step2InputField>
+                  </div>
+                  <RemoveButton onClick={handleRemoveSecondProgram}>x</RemoveButton>
+                </SecondClassRow>
+              )}
             </Step>
           </Column>
           {addMoreChildren && Array.from({ length: numberOfChildren - 1 }, (_, index) => (
@@ -378,76 +539,134 @@ const RegistrationForm = () => {
               </Step>
             </Column>
           ))}
-        </FormSection>
-        <TableContainer>
-          <SmallText>*Red button to add the 1st class, blue for 2nd class, get 10% off when register 2 programs</SmallText>
-          {filteredPrograms.length === 0 ? (
-            <NoProgramsMessage>No programs are available for the selected criteria.</NoProgramsMessage>
-          ) : (
-            <StyledTable className="table">
-              <thead>
-                <tr>
-                  <StyledTh width="20%" onClick={() => handleSort("name")}>Name {sortKey === "name" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
-                  <StyledTh width="15%" onClick={() => handleSort("time")}>Time {sortKey === "time" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
-                  <StyledTh width="30%" onClick={() => handleSort("place")}>Place {sortKey === "place" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
-                  <StyledTh width="15%" onClick={() => handleSort("fees")}>Program Fees {sortKey === "fees" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
-                  <StyledTh width="15%">Register</StyledTh>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredPrograms.map((program, index) => (
-                  <tr key={index}>
-                    <StyledTd width="20%">{program.name}</StyledTd>
-                    <StyledTd width="15%">{new Date(program.time).toLocaleString()}</StyledTd>
-                    <StyledTd width="30%">{`${program.place} (${program.location})`}</StyledTd>
-                    <StyledTd width="15%">${program.fees} per week</StyledTd>
-                    <StyledTd width="15%">
-                      <RedLink to="#" onClick={() => handleRedButtonClick(program)} className="btn btn-danger">Register</RedLink>
-                      <BlueLink to="#" onClick={() => handleBlueButtonClick(program)} className="btn btn-primary">Register</BlueLink>
-                    </StyledTd>
-                  </tr>
-                ))}
-              </tbody>
-            </StyledTable>
-          )}
-        </TableContainer>
+          <br></br>
+          </FormSection>
+          <TableContainer>
+  <StyledTable className="table">
+    <thead>
+      <tr>
+        <StyledTh width="20%" onClick={() => handleSort("name")}>Name {sortKey === "name" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
+        <StyledTh width="15%" onClick={() => handleSort("time")}>Time {sortKey === "time" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
+        <StyledTh width="25%" onClick={() => handleSort("place")}>Place {sortKey === "place" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
+        <StyledTh width="15%" onClick={() => handleSort("fees")}>Program Fees {sortKey === "fees" && (sortOrder === 1 ? "↑" : "↓")}</StyledTh>
+        {/*      
+                <StyledTh width="15%">Register</StyledTh>
+      */}
+        <StyledTh width="25%">Selection</StyledTh>
+      </tr>
+    </thead>
+    <tbody>
+      {filteredPrograms.map((program, index) => (
+        <tr key={index}>
+          <StyledTd>{program.name}</StyledTd>
+          <StyledTd>{new Date(program.time).toLocaleString()}</StyledTd>
+          <StyledTd>{`${program.place} (${program.location})`}</StyledTd>
+          <StyledTd>${program.fees} per week</StyledTd>
+          {/*            
+          <StyledTd>
+            <RedLink to="#" onClick={() => handleRedButtonClick(program)} className="btn btn-danger">Register</RedLink>
+            <BlueLink to="#" onClick={() => handleBlueButtonClick(program)} className="btn btn-primary">Register</BlueLink>
+          </StyledTd> */}
+          <StyledTd>
+            <input
+              type="checkbox"
+              checked={!!selectedPrograms[program._id]}
+              disabled={Object.keys(selectedPrograms).filter(key => selectedPrograms[key]).length >= 2 && !selectedPrograms[program._id]}
+              onChange={() => handleCheckboxChange(program._id)}
+            />
+          </StyledTd>
+        </tr>
+      ))}
+    </tbody>
+  </StyledTable>
+  <RegisterButton onClick={handleRegisterSelected}>Register</RegisterButton>
+  </TableContainer>
+
         <FormSection>
           <Column>
             <Step>
-              <StepTitle>Additional Comments/Request</StepTitle>
+              <StepTitle>Does the participant have any medical conditions or allergies we should be aware of:</StepTitle>
               <FormRow>
                 <TextArea
                   name="additionalComments"
                   value={additionalComments}
                   onChange={(e) => setAdditionalComments(e.target.value)}
                   rows="5"
-                  cols="50"
+                  cols="180"
                   placeholder="Enter any additional comments or requests here..."
                 />
               </FormRow>
             </Step>
           </Column>
         </FormSection>
-        <ButtonRow>
-          {/* <ConfirmButton type="submit" onClick={handleBuy}>Confirm & Pay</ConfirmButton> */}
-          <ConfirmButton type="submit">Confirm & Pay</ConfirmButton>
+        {/*          
+        
+        <ConfirmButton type="submit" onClick={handleBuy}>Confirm & Pay</ConfirmButton>  
+        
+         <ButtonRow>
+               <ConfirmButton type="submit">Next            
+          <img src={arrow} alt="Next" /></ConfirmButton>
         </ButtonRow>
+        
+        */}
+
+   
+        <ButtonRow>
+        <ConfirmButton onClick={handleNextClick}>
+          Next
+          <img src={arrow} alt="Next" />
+        </ConfirmButton>
+      </ButtonRow>
+{/*           <ConfirmButton type="submit">Confirm & Pay</ConfirmButton>   */}
+
+
       </Container>
+      </BGI>
     </>
   );
 };
-
 const Header = styled.div`
-  background-color: #f5f5f5;
   padding: 20px;
-  text-align: center;
+  padding-top: 150px;
+  display: flex;        // Enable flexbox
+  justify-content: space-between; // Space out the back button and the title
+  align-items: center;  // Vertically align the items in the middle
 `;
 
+const BGI = styled.div`
+  position: relative;  // Change to relative to contain the pseudo-element
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;  // Adjust z-index to ensure it stacks as needed
+
+  // Using before to create a pseudo-element for the background
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url(${logo}) no-repeat center center;
+    background-size: 45%; // Adjusts the background image to be 90% of the element size
+    opacity: 0.4;
+    z-index: -1; // Ensures the background is behind the content
+  }
+`;
+
+
 const Title = styled.h1`
+
   margin: 0;
   color: #333;
 `;
-
+const SecondClassRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+`;
 const Description = styled.p`
   margin: 10px 0;
   color: #666;
@@ -457,23 +676,27 @@ const BackButton = styled.a`
   display: inline-block;
   margin-top: 10px;
   padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
+  background-color: #ffffff;
+  color: black;
   text-decoration: none;
   border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  font-weight: 800;
 
   &:hover {
-    background-color: #0056b3;
+    color: #5e0511;
   }
 `;
 
+
 const Container = styled.form`
-  max-width: 850px;
+  max-width: 90%;
   margin: 20px auto;
   padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  background-color: #fff;
+  border-radius: 5px;   
+
 `;
 
 const FormSection = styled.div`
@@ -495,19 +718,39 @@ const StepTitle = styled.h2`
 
 const FormRow = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  margin-bottom: 10px;
+  flex-direction: column;
+  align-items: flex-start;
 
-  & > * {
-    margin-right: 10px;
-  }
 `;
 
 const InputLabel = styled.label`
-  flex: 1 1 150px;
-  margin-bottom: 5px;
+  flex: 1 1 20%;  // Adjust this depending on how much space you want each label to take
+  margin-bottom: 0;  // Remove margin-bottom to keep labels on the same line
   color: #666;
+  padding: 10px 0;  // Added padding for better spacing
+`;
+
+const InputField = styled.div`
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+`;
+
+const Step2FormRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;  justify-content: space-between;
+
+`;
+
+const Step2InputLabel = styled.label`
+  flex: 1 1 100%; // Full width for the label to push input to new line
+  color: #666;
+  padding-top: 10px;
+`;
+
+const Step2InputField = styled.div`
+  flex: 1 1 100%; // Full width to ensure input takes the space below the label
 `;
 
 const TextArea = styled.textarea`
@@ -525,28 +768,37 @@ const ButtonRow = styled.div`
 
 const ConfirmButton = styled.button`
   padding: 10px 20px;
-  background-color: #28a745;
-  color: white;
+  background-color: #ffffff;
+  color: black;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  text-decoration: underline;
+  margin-bottom: 25px; // Keeps some space below each row
+  font-weight: 800;
 
   &:hover {
-    background-color: #218838;
+    color: #5e0511;
+  }
+
+  img {
+    margin-left: 5px;
+    width: 20px; // Adjust size as necessary
+    height: auto;
   }
 `;
 
+
 const TableContainer = styled.div`
   width: 100%; /* Adjust to fit the container */
-  background: white;
   border-radius: 8px;
   padding: 16px;
   margin-top: 3vw;
 `;
 
 const SmallText = styled.p`
-  font-size: 12px;
-  color: #666;
+  font-size: 20px;
+  color: #000000;
   text-align: center;
   margin-bottom: 10px;
 `;
@@ -558,6 +810,7 @@ const NoProgramsMessage = styled.p`
 `;
 
 const StyledTable = styled.table`
+border-color:#95071A;
   width: 100%;
   table-layout: fixed;
   tr { text-align: center; }
@@ -573,7 +826,6 @@ const StyledTd = styled.td`
   width: ${({ width }) => width};
   overflow: hidden;
 `;
-
 const RedLink = styled.a`
   display: inline-block;
   margin: 5px;
@@ -612,6 +864,22 @@ const RemoveButton = styled.button`
 
   &:hover {
     color: darkred;
+  }
+`;
+const RegisterButton = styled.button`
+  margin-top: 10px;
+  padding: 10px 20px;
+  background-color: #4CAF50;  // Green background for visibility
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  display: block;
+  margin-left: auto;  // Aligns the button to the right
+  margin-right: calc(8.5%);  // Adjusts based on your column widths to align under 'Selection'
+
+  &:hover {
+    background-color: #45a049;  // Darker green on hover
   }
 `;
 
