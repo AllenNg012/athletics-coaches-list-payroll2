@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import p1 from './p1.jpg';
-import p2 from './p2.jpg';
+import p2 from './p4.jpg';
 import p3 from './p3.jpg';
 import { Link } from 'react-router-dom'; // Import Link
 
@@ -67,8 +67,8 @@ const OurProgram = () => {
           <Link to="/BTraining">
             <FullSizeImage src={p1} alt="Basketball" />
           </Link>
-          <Link to="/HouseLeagues">
-            <FullSizeImage src={p2} alt="HOUSE LEAGUES" />
+          <Link to="/AllGirlsTrainingAcademy">
+            <FullSizeImage src={p2} alt="All-Girls Training Academy" />
           </Link>
           <Link to="/LeadershipCamps">
             <FullSizeImage src={p3} alt="Leadership Camps" />

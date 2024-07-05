@@ -64,11 +64,11 @@ const Survey = () => {
     <BackgroundContainer>
     <Container>
       <Title>PICK THE RIGHT PROGRAM</Title>
-      <p>Please complete each indicated question*</p>
+      <p>Please complete each indicated question<tag> * </tag></p>
       <FormSection>
         <FormRow>
           <P>Player Information</P>
-          <InputLabel>Gender*</InputLabel>
+          <InputLabel>Gender<tag> * </tag></InputLabel>
           <RadioGroup>
             <RadioButton>
               <input type="radio" name="gender" value="Girls" checked={gender === "Girls"} onChange={handleRadioButtonChange(setGender)} />
@@ -81,7 +81,7 @@ const Survey = () => {
           </RadioGroup>
         </FormRow>
         <FormRow>
-          <InputLabel>Age*</InputLabel>
+          <InputLabel>Age<tag> * </tag></InputLabel>
           <RadioGroup>
             {['5-6', '7-8', '9-10', '11-12'].map(ageOption => (
               <RadioButton key={ageOption}>
@@ -93,9 +93,9 @@ const Survey = () => {
         </FormRow>
           <P>Program Information</P>
           <FormRow>
-          <InputLabel>Program of Choice*</InputLabel>
+          <InputLabel>Program of Choice<tag> * </tag></InputLabel>
           <RadioGroup>
-            {['Basketball Group Academy Training', 'House Leagues' ,'Leadership Retreats'].map(sportOption => (
+            {['Basketball Group Academy Training', 'All-Girls Training Academy' ,'Leadership Retreats'].map(sportOption => (
               <RadioButton key={sportOption}>
                 <input type="radio" name="sport" value={sportOption} checked={sport === sportOption} onChange={handleRadioButtonChange(setSport)} />
                 {sportOption}
@@ -104,7 +104,7 @@ const Survey = () => {
           </RadioGroup>
         </FormRow>
         <FormRow>
-          <InputLabel>Preferred day(s) of program*</InputLabel>
+          <InputLabel>Preferred day(s) of program<tag> * </tag></InputLabel>
           <RadioGroup>
             {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(dayOption => (
               <RadioButton key={dayOption}>
@@ -115,7 +115,7 @@ const Survey = () => {
           </RadioGroup>
         </FormRow>
         <FormRow>
-          <InputLabel>Desired Location*</InputLabel>
+          <InputLabel>Desired Location<tag> * </tag></InputLabel>
           <RadioGroup>
             {['Vaughan', 'Markham', 'Aurora', 'Newmarket', 'Mississauga', 'Brampton', 'East York', 'Midtown'].map(locationOption => (
               <RadioButton key={locationOption}>
@@ -126,7 +126,7 @@ const Survey = () => {
           </RadioGroup>
         </FormRow>
         <FormRow>
-          <InputLabel>Do you want to add more child(ren)?*</InputLabel>
+          <InputLabel>Do you want to add more child(ren)?<tag> * </tag>10% off</InputLabel>
           <RadioGroup>
             <RadioButton>
               <input type="radio" name="addMoreChildren" value="yes" checked={addMoreChildren} onChange={() => setAddMoreChildren(true)} />
@@ -181,6 +181,7 @@ const Container = styled.div`
   background-color: transparent; // Ensure the container itself has no background
   z-index: 1; // Make sure content is above the background
   position: relative;
+  tag{color:red}
 `;
 
 
@@ -205,6 +206,9 @@ const FormRow = styled.div`
 const InputLabel = styled.label`
   margin-bottom: 5px; // Reduced margin
   font-weight: bold;
+  tag{
+    color: #ff0022;
+  }
   
 `;
 
@@ -262,6 +266,6 @@ const P = styled.div`
   color: #95071A;
 
 `
-
+ 
 
 export default Survey;

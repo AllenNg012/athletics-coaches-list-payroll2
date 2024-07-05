@@ -1,21 +1,21 @@
 /* eslint-disable react/no-unescaped-entities */
 import styled from 'styled-components';
-import p1 from './p2.jpg';  // Ensure this path is correct according to your project structure
+import p1 from './p42.jpg';  // Ensure this path is correct according to your project structure
 import { useNavigate } from 'react-router-dom';
 import registernow from './registernow.png';
 
-const HouseLeagues = () => {
+const AllGirlsTrainingAcademy = () => {
   const navigate = useNavigate();
   const handleRegisterClick = () => {
     // Navigate to the survey page with a predefined sport
-    navigate('/survey?class=House Leagues');
+    navigate('/survey?class=All-Girls Training Academy');
   };
   return (
     <Container>
-      <Title>HOUSE LEAGUES</Title>
+      <Title>All-Girls Training Academy</Title>
       <Content>
         <ColumnLeft>
-          <Image src={p1} alt="HOUSE LEAGUES" />
+          <Image src={p1} alt="All-Girls Training Academy" />
         </ColumnLeft>
         <ColumnRight>
           <Box>
@@ -51,7 +51,7 @@ const HouseLeagues = () => {
   );
 };
 
-export default HouseLeagues;
+export default AllGirlsTrainingAcademy;
 
 const Container = styled.div`
   width: 100%;

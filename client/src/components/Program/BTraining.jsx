@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import p1 from './p1.jpg';
+import p1 from './p12.png';
 import registernow from './registernow.png';
 
 const BTraining = () => {

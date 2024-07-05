@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { useLocation, Link } from "react-router-dom";
 import axios from "axios";
 import { loadStripe } from "@stripe/stripe-js";
+import logo from './logo.jpg';
 import arrow from './arrow.png'
 
 const stripePromise = loadStripe("pk_test_51PNSST2KpyYZmvZEQWr6oqPxWFqTeH6KbyUOQEYblEKHM3U7XhTCYl4GU6YJ2lYJgmIHB2n0od0V28dGPfw0sXSP00BKh7CEYT");
@@ -43,7 +44,6 @@ const RegistrationForm2 = () => {
 
   const [selectedForFirstChild, setSelectedForFirstChild] = useState(null);
   const [selectedForSecondChild, setSelectedForSecondChild] = useState(null);
-  
 
   useEffect(() => {
     axios.get('http://localhost:3001/programs')
@@ -121,6 +121,7 @@ const RegistrationForm2 = () => {
       setChildDays(newChildDays);
     }
   };
+
   const handleNextClick = async () => {
     if (
       !parentEmail ||
@@ -287,16 +288,7 @@ const RegistrationForm2 = () => {
     }
     return 0;
   });
-  const handleSelectionChange = (program, childIndex) => {
-    const exists = selectedPrograms.find(p => p.programID === program._id && p.childIndex === childIndex);
-    if (exists) {
-      setSelectedPrograms(selectedPrograms.filter(p => p.programID !== program._id || p.childIndex !== childIndex));
-    } else {
-      setSelectedPrograms([...selectedPrograms, { ...program, childIndex }]);
-    }
-  };
 
-  
   const handleRegisterSelections = () => {
     // Confirm before proceeding with registration
     if (window.confirm("Do you want to register the selected program(s)?")) {
@@ -307,7 +299,7 @@ const RegistrationForm2 = () => {
           setChildDays(prevDays => [new Date(selectedProgramForFirst.time).toLocaleString(), prevDays[1]]);
         }
       }
-  
+
       if (selectedForSecondChild) {
         const selectedProgramForSecond = programs.find(program => program._id === selectedForSecondChild);
         if (selectedProgramForSecond) {
@@ -319,18 +311,20 @@ const RegistrationForm2 = () => {
       console.log("Registration canceled by user.");
     }
   };
-  
-  
 
   return (
     <>
-      <Header>
-        <Title>REGISTRATION FORM({numberOfChildren} Children)</Title>
-        <Description>
-          <span>You have selected:</span> {gender}, age: {age}, Sport of Choice: {sport}, Location: {programLocation}
-        </Description>
-        <BackButton href="/survey">Back</BackButton>
-      </Header>
+          <BGI>
+        <Header>
+          <div>
+            <Title>REGISTRATION FORM ({numberOfChildren} Children)</Title>
+            <Description>
+            <D_title>SELECTED: <br /></D_title>
+              {gender} | Age: {age} | Class: {sport} | Location: {programLocation} | {"1 child added"}
+            </Description>
+          </div>
+          <BackButton href="/survey">Back</BackButton>
+        </Header>
       <Container>
         <FormSection>
           <Column>
@@ -338,163 +332,196 @@ const RegistrationForm2 = () => {
               <StepTitle>STEP 1 - Parent/Guardian Information</StepTitle>
               <FormRow>
                 <InputLabel>Email:</InputLabel>
-                <input type="email" name="parentEmail" value={parentEmail} onChange={(e) => setParentEmail(e.target.value)} required />
                 <InputLabel>Full Name:</InputLabel>
-                <input type="text" name="parentName" value={parentName} onChange={(e) => setParentName(e.target.value)} required />
+                <InputLabel>Phone Number:</InputLabel>
+                <InputLabel>Address:</InputLabel>
               </FormRow>
               <FormRow>
-                <InputLabel>Phone Number:</InputLabel>
-                <input type="tel" name="parentPhone" value={parentPhone} onChange={(e) => setParentPhone(e.target.value)} required />
-                <InputLabel>Address:</InputLabel>
-                <input type="text" name="parentAddress" value={parentAddress} onChange={(e) => setParentAddress(e.target.value)} required />
+              <InputLabel>
+                <StyledInputShort type="email" name="parentEmail" value={parentEmail} onChange={(e) => setParentEmail(e.target.value)} required />
+                </InputLabel>
+                <InputLabel><StyledInputShort type="text" name="parentName" value={parentName} onChange={(e) => setParentName(e.target.value)} required /></InputLabel>
+                <InputLabel><StyledInputShort type="tel" name="parentPhone" value={parentPhone} onChange={(e) => setParentPhone(e.target.value)} required /></InputLabel>
+                <InputLabel><StyledInputShort type="text" name="parentAddress" value={parentAddress} onChange={(e) => setParentAddress(e.target.value)} required /></InputLabel>
               </FormRow>
             </Step>
           </Column>
           <Column>
-  <Step>
-    <StepTitle>STEP 2 - Child Details</StepTitle>
-    <FormRow>
-      <InputLabel>Full Name (Child 1):</InputLabel>
-      <input type="text" name="childName1" required />
-      <InputLabel>Date of Birth (Child 1):</InputLabel>
-      <input type="date" name="childDOB1" required onChange={(e) => handleDOBChange(0, e)} />
-      <InputLabel>Class (Child 1):</InputLabel>
-      <input type="text" name="childClass1" value={childClasses[0]} readOnly required />
-      <InputLabel>Day (Child 1):</InputLabel>
-      <input type="text" name="childDayOfClass1" value={childDays[0]} readOnly required />
-    </FormRow>
-    <FormRow>
-      <InputLabel>Full Name (Child 2):</InputLabel>
-      <input type="text" name="childName2" required />
-      <InputLabel>Date of Birth (Child 2):</InputLabel>
-      <input type="date" name="childDOB2" required onChange={(e) => handleDOBChange(1, e)} />
-      <InputLabel>Class (Child 2):</InputLabel>
-      <input type="text" name="childClass2" value={childClasses[1]} readOnly required />
-      <InputLabel>Day (Child 2):</InputLabel>
-      <input type="text" name="childDayOfClass2" value={childDays[1]} readOnly required />
-    </FormRow>
-  </Step>
-</Column>
-
+            <Step>
+              <StepTitle>STEP 2 - Child Details</StepTitle>
+              <FormRow>
+                <InputLabel>Full Name (Child 1):</InputLabel>
+                <InputLabel>Date of Birth (Child 1):</InputLabel>
+                <InputLabel>Class (Child 1):</InputLabel>
+                <InputLabel>Day (Child 1):</InputLabel>
+              </FormRow>
+              <FormRow>
+                <StyledInputShort type="text" name="childName1" required />
+                <StyledInputShort type="date" name="childDOB1" required onChange={(e) => handleDOBChange(0, e)} />
+                <StyledInputShort type="text" name="childClass1" value={childClasses[0]} readOnly required />
+                <StyledInputShort type="text" name="childDayOfClass1" value={childDays[0]} readOnly required />
+              </FormRow>
+              <FormRow>
+                <InputLabel>Full Name (Child 2):</InputLabel>
+                <InputLabel>Date of Birth (Child 2):</InputLabel>
+                <InputLabel>Class (Child 2):</InputLabel>
+                <InputLabel>Day (Child 2):</InputLabel>
+              </FormRow>
+              <FormRow>
+                <StyledInputShort type="text" name="childName2" required />
+                <StyledInputShort type="date" name="childDOB2" required onChange={(e) => handleDOBChange(1, e)} />
+                <StyledInputShort type="text" name="childClass2" value={childClasses[1]} readOnly required />
+                <StyledInputShort type="text" name="childDayOfClass2" value={childDays[1]} readOnly required />
+              </FormRow>
+            </Step>
+          </Column>
         </FormSection>
+        <StepTitle2>Program select : click for register</StepTitle2>
         <TableContainer>
+          {/* 
           <SmallText>*Red button to add a program for Child 1, Yellow button for Child 2</SmallText>
+          */}
           {filteredPrograms.length > 0 ? (
-           <StyledTable className="table">
-           <thead>
-             <tr>
-               <StyledTh>Name</StyledTh>
-               <StyledTh>Time</StyledTh>
-               <StyledTh>Place</StyledTh>
-               <StyledTh>Program Fees</StyledTh>
-               <StyledTh>1st Child Selection</StyledTh>
-               <StyledTh>2nd Child Selection</StyledTh>
-             </tr>
-           </thead>
-           <tbody>
-             {filteredPrograms.map((program, index) => (
-               <tr key={index}>
-                 <StyledTd>{program.name}</StyledTd>
-                 <StyledTd>{new Date(program.time).toLocaleString()}</StyledTd>
-                 <StyledTd>{program.place}</StyledTd>
-                 <StyledTd>${program.fees}</StyledTd>
-                 <StyledTd>
-          <input
-            type="checkbox"
-            checked={selectedForFirstChild === program._id}
-            onChange={() => {
-              if (selectedForFirstChild === program._id) {
-                setSelectedForFirstChild(null);
-              } else {
-                setSelectedForFirstChild(program._id);
-              }
-            }}
-            disabled={selectedForFirstChild !== null && selectedForFirstChild !== program._id}
-          />
-        </StyledTd>
-        <StyledTd>
-          <input
-            type="checkbox"
-            checked={selectedForSecondChild === program._id}
-            onChange={() => {
-              if (selectedForSecondChild === program._id) {
-                setSelectedForSecondChild(null);
-              } else {
-                setSelectedForSecondChild(program._id);
-              }
-            }}
-            disabled={selectedForSecondChild !== null && selectedForSecondChild !== program._id}
-          />
-        </StyledTd>
-               </tr>
-             ))}
-           </tbody>
-         </StyledTable>
-         
-         
+            <StyledTable className="table">
+              <thead>
+                <tr>
+                  <StyledTh>Name</StyledTh>
+                  <StyledTh>Time</StyledTh>
+                  <StyledTh>Place</StyledTh>
+                  <StyledTh>Program Fees</StyledTh>
+                  <StyledTh>1st Child Selection</StyledTh>
+                  <StyledTh>2nd Child Selection</StyledTh>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredPrograms.map((program, index) => (
+                  <tr key={index}>
+                    <StyledTd>{program.name}</StyledTd>
+                    <StyledTd>{new Date(program.time).toLocaleString()}</StyledTd>
+                    <StyledTd>{program.place}</StyledTd>
+                    <StyledTd>${program.fees}</StyledTd>
+                    <StyledTd>
+                      <input
+                        type="checkbox"
+                        checked={selectedForFirstChild === program._id}
+                        onChange={() => {
+                          if (selectedForFirstChild === program._id) {
+                            setSelectedForFirstChild(null);
+                          } else {
+                            setSelectedForFirstChild(program._id);
+                          }
+                        }}
+                        disabled={selectedForFirstChild !== null && selectedForFirstChild !== program._id}
+                      />
+                    </StyledTd>
+                    <StyledTd>
+                      <input
+                        type="checkbox"
+                        checked={selectedForSecondChild === program._id}
+                        onChange={() => {
+                          if (selectedForSecondChild === program._id) {
+                            setSelectedForSecondChild(null);
+                          } else {
+                            setSelectedForSecondChild(program._id);
+                          }
+                        }}
+                        disabled={selectedForSecondChild !== null && selectedForSecondChild !== program._id}
+                      />
+                    </StyledTd>
+                  </tr>
+                ))}
+              </tbody>
+            </StyledTable>
           ) : (
             <NoProgramsMessage>No programs are available for the selected criteria.</NoProgramsMessage>
-          )}  
+          )}
           <RegisterButton onClick={handleRegisterSelections}>Register</RegisterButton>
-
         </TableContainer>
         <FormSection>
           <Column>
             <Step>
-              <StepTitle>Does the participant have any medical conditions or allergies we should be aware of:</StepTitle>
-              <FormRow>
+              <StepTitle3>Does the participant have any medical conditions or allergies we should be aware of:</StepTitle3>
+              <FormRowHorizontal>
                 <TextArea
                   name="additionalComments"
                   value={additionalComments}
                   onChange={(e) => setAdditionalComments(e.target.value)}
                   rows="5"
-                  cols="50"
+                  cols="120"
                   placeholder="Enter any additional comments or requests here..."
                 />
-              </FormRow>
+                <ButtonRow>
+                  <ConfirmButton onClick={handleNextClick}>
+                    Next
+                    <img src={arrow} alt="Next" />
+                  </ConfirmButton>
+                </ButtonRow>
+              </FormRowHorizontal>
             </Step>
           </Column>
         </FormSection>
-
-        {/*           <ButtonRow>
-          <ConfirmButton onClick={handleBuy}>Confirm & Pay</ConfirmButton>
-        </ButtonRow>
-  */}
-
-<ButtonRow>
-        <ConfirmButton onClick={handleNextClick}>
-          Next
-          <img src={arrow} alt="Next" />
-        </ConfirmButton>
-      </ButtonRow>
       </Container>
+      </BGI>
     </>
   );
 };
 
-const Header = styled.div`
+const BGI = styled.div`
+  position: relative;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  padding-top: 15px;
 
-  background-color: #f5f5f5;
-  padding: 20px;
-  padding-top: 150px;
-  text-align: center;
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url(${logo}) no-repeat center center;
+    background-size: 45%;
+    opacity: 0.4;
+    z-index: -1;
+  }
+`;
+
+const Header = styled.div`
+  padding: 0px 20px;
+  padding-top: 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 90%;
+  margin: 20px auto;
 `;
 
 const Title = styled.h1`
+  font-weight: 800;
   margin: 0;
-  color: #333;
+  color: #95071A;
 `;
 
+const D_title = styled.div`
+  margin: 0;
+  color: #95071A; 
+  font-weight: 800;
+`;
 const Description = styled.p`
   margin: 10px 0;
-  color: #666;
+  color: #000000;
+  font-weight: 800;
 `;
+
 
 const BackButton = styled.a`
   display: inline-block;
   margin-top: 10px;
   padding: 10px 20px;
-  background-color: #ffffff25;
+  background-color: #ffffff;
   color: black;
   text-decoration: none;
   border-radius: 5px;
@@ -509,50 +536,65 @@ const BackButton = styled.a`
 `;
 
 const Container = styled.div`
-  max-width: 850px;
-  margin: 20px auto;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  background-color: #fff;
+  max-width: 90%;
+  margin: 0px auto;
+  padding: 0px 20px;
 `;
 
-const FormSection = styled.div`
-  margin-bottom: 20px;
-`;
+const FormSection = styled.div``;
 
-const Column = styled.div`
-  margin-bottom: 20px;
-`;
+const Column = styled.div``;
 
 const Step = styled.div`
   margin-bottom: 20px;
 `;
 
-const StepTitle = styled.h2`
+const StepTitle = styled.div`
   margin-bottom: 10px;
-  color: #333;
+  color: #95071A;
+  font-size: 19.5px;
+  font-weight: bold;
+`;
+
+const StepTitle2 = styled.h6`
+  margin-top: 3vw;
+  margin-left: 1vw;
+`;
+
+const StepTitle3 = styled.h5`
+  margin-bottom: 10px;
+  font-weight: 600;
 `;
 
 const FormRow = styled.div`
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  margin-bottom: 10px;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+`;
 
-  & > * {
-    margin-right: 10px;
-  }
+const FormRowHorizontal = styled.div`
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
 `;
 
 const InputLabel = styled.label`
-  flex: 1 1 150px;
-  margin-bottom: 5px;
-  color: #666;
+  flex: 1 1 25%;
+  margin-bottom: 0;
+  color: #000000;
+  padding: 10px 0;
+`;
+
+const StyledInputShort = styled.input`
+  border-radius: 50px;
+  border: 1px solid;
+  flex: 1 1 25%;
+  margin-right: 140px;
 `;
 
 const TextArea = styled.textarea`
-  flex: 1 1 100%;
+  flex: 1 1 80%;
   margin-bottom: 10px;
   padding: 10px;
   border: 1px solid #ccc;
@@ -560,8 +602,10 @@ const TextArea = styled.textarea`
 `;
 
 const ButtonRow = styled.div`
-  text-align: center;
-  margin-top: 20px; /* Ensure it has some spacing from other content */
+  margin-top: 20px;
+  flex: 1 1 20%;
+  display: flex;
+  justify-content: flex-end;
 `;
 
 const ConfirmButton = styled.button`
@@ -572,7 +616,7 @@ const ConfirmButton = styled.button`
   border-radius: 5px;
   cursor: pointer;
   text-decoration: underline;
-  margin-bottom: 25px; // Keeps some space below each row
+  margin-bottom: 25px;
   font-weight: 800;
 
   &:hover {
@@ -581,23 +625,20 @@ const ConfirmButton = styled.button`
 
   img {
     margin-left: 5px;
-    width: 20px; // Adjust size as necessary
+    width: 20px;
     height: auto;
   }
 `;
 
-
 const TableContainer = styled.div`
-  width: 100%; /* Adjust to fit the container */
-  background: white;
+  width: 100%;
   border-radius: 8px;
-  padding: 16px;
-  margin-top: 3vw;
+  padding: 0px 16px 16px 16px;
 `;
 
 const SmallText = styled.p`
-  font-size: 12px;
-  color: #666;
+  font-size: 20px;
+  color: #000000;
   text-align: center;
   margin-bottom: 10px;
 `;
@@ -609,9 +650,12 @@ const NoProgramsMessage = styled.p`
 `;
 
 const StyledTable = styled.table`
+  border-color: #95071A;
   width: 100%;
   table-layout: fixed;
-  tr { text-align: center; }
+  tr {
+    text-align: center;
+  }
 `;
 
 const StyledTh = styled.th`
@@ -625,44 +669,17 @@ const StyledTd = styled.td`
   overflow: hidden;
 `;
 
-const RedLink = styled.a`
-  display: inline-block;
-  margin: 5px;
-  padding: 5px 10px;
-  background-color: red;
-  color: white;
-  text-decoration: none;
-  border-radius: 5px;
-
-  &:hover {
-    background-color: darkred;
-  }
-`;
-
-const YellowLink = styled.a`
-  display: inline-block;
-  margin: 5px;
-  padding: 5px 10px;
-  background-color: yellow;
-  color: black;
-  text-decoration: none;
-  border-radius: 5px;
-
-  &:hover {
-    background-color: orange;
-  }
-`;
 const RegisterButton = styled.button`
-  display: block;
-  padding: 10px 60px;
   margin-top: 10px;
-  margin-left: auto;  // Aligns the button to the right
-  margin-right: calc(5%);  // Adjusts based on your column widths to align under 'Selection'
+  padding: 10px 20px;
   background-color: #4CAF50;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  display: block;
+  margin-left: auto;
+  margin-right: calc(7.2%);
 
   &:hover {
     background-color: #45a049;

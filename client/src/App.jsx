@@ -32,7 +32,7 @@ import Cancel from './components/Cancel';
 import Content1 from './components/Content/Content1';
 import Content2 from './components/Content/Content2';
 import BTraining from './components/Program/BTraining';
-import HouseLeagues from './components/Program/HouseLeagues';
+import AllGirlsTrainingAcademy from './components/Program/AllGirlsTrainingAcademy';
 import LeadershipCamps from './components/Program/LeadershipCamps';
 
 
@@ -67,7 +67,7 @@ function App() {
          <Route path='/Content1' element={<Content1 />} ></Route>
          <Route path='/Content2' element={<Content2 />} ></Route>
          <Route path='/BTraining' element={<BTraining />} ></Route>
-         <Route path='/HouseLeagues' element={<HouseLeagues />} ></Route>
+         <Route path='/AllGirlsTrainingAcademy' element={<AllGirlsTrainingAcademy />} ></Route>
          <Route path='/LeadershipCamps' element={<LeadershipCamps />} ></Route>
   
       </Routes>
